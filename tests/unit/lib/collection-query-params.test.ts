@@ -78,9 +78,7 @@ describe('serializeCollectionParams', () => {
         genre: 'Funk',
         storageLocation: 'Bin 2',
       })
-    ).toBe(
-      '?q=hello&sort=oldest&view=list&genre=Funk&location=Bin+2'
-    );
+    ).toBe('?q=hello&sort=oldest&view=list&genre=Funk&location=Bin+2');
   });
 
   it('preserves list view without other params', () => {

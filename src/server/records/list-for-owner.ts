@@ -14,7 +14,9 @@ export type ListRecordsOptions = {
   storageLocation?: string;
 };
 
-function orderByForSort(sort: SortKey | undefined): Prisma.CollectionRecordOrderByWithRelationInput[] {
+function orderByForSort(
+  sort: SortKey | undefined
+): Prisma.CollectionRecordOrderByWithRelationInput[] {
   switch (sort ?? 'newest') {
     case 'oldest':
       return [{ createdAt: 'asc' }];
@@ -111,9 +113,7 @@ export async function getCollectionFacets(ownerId: string) {
 
   const genres = [
     ...new Set(
-      rows
-        .map((r) => r.genre?.trim())
-        .filter((g): g is string => Boolean(g))
+      rows.map((r) => r.genre?.trim()).filter((g): g is string => Boolean(g))
     ),
   ].sort((a, b) => a.localeCompare(b));
 

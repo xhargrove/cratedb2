@@ -17,7 +17,10 @@ export function RecordList({ records }: { records: RecordDisplayRow[] }) {
         </thead>
         <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
           {records.map((r) => (
-            <tr key={r.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+            <tr
+              key={r.id}
+              className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+            >
               <td className="px-4 py-3 font-medium text-zinc-900 dark:text-zinc-100">
                 <Link
                   href={`/dashboard/records/${r.id}`}
