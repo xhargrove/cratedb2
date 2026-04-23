@@ -225,6 +225,58 @@ export async function updateSingleAction(
     };
   }
 
+  try {
+    if (
+      artworkParsed.kind === 'absent' &&
+      parsed.data.spotifyTrackId?.trim()
+    ) {
+      const row = await getSingleByIdForOwner(idParsed.id, user.id);
+      const replaceWithSpotify = formData.get('applySpotifyArtwork') === '1';
+      const shouldFetchSpotifyCover =
+        row && (replaceWithSpotify || !row.artworkKey);
+
+      if (shouldFetchSpotifyCover) {
+        const cfg = getSpotifyIntegrationConfig();
+        if (cfg.enabled) {
+          const cover = await fetchSpotifyTrackCoverBuffer({
+            cfg,
+            trackId: parsed.data.spotifyTrackId.trim(),
+          });
+          if (cover) {
+            const key = singleArtworkRelativeKey(
+              user.id,
+              idParsed.id,
+              cover.mimeType
+            );
+            const prevKey = row.artworkKey;
+            try {
+              await writeArtworkBundle(key, cover.buffer, cover.mimeType);
+              await prisma.collectionSingle.updateMany({
+                where: { id: idParsed.id, ownerId: user.id },
+                data: {
+                  artworkKey: key,
+                  artworkMimeType: cover.mimeType,
+                  artworkUpdatedAt: new Date(),
+                },
+              });
+              if (prevKey && prevKey !== key) {
+                await deleteArtworkBundle(prevKey);
+              }
+            } catch (inner) {
+              await deleteArtworkBundle(key).catch(() => {});
+              throw inner;
+            }
+          }
+        }
+      }
+    }
+  } catch (e) {
+    logger.warn(
+      { err: e, singleId: idParsed.id },
+      'updateSingle Spotify sleeve art failed — text fields still saved'
+    );
+  }
+
   revalidatePhysicalSlotPagesFromRow({
     storageKind: existing.storageKind,
     shelfRow: existing.shelfRow,

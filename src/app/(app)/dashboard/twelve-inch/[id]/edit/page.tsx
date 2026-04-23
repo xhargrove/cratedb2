@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import { EditTwelveInchForm } from '@/components/twelve-inch/edit-twelve-inch-form';
 import { requireUser } from '@/server/auth/require-user';
 import { getTwelveInchByIdForOwner } from '@/server/twelve-inch-singles/get-by-id-for-owner';
+import { getSpotifyIntegrationConfig } from '@/server/spotify/config';
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -23,6 +24,8 @@ export default async function EditTwelveInchPage({ params }: Props) {
     notFound();
   }
 
+  const spotify = getSpotifyIntegrationConfig();
+
   return (
     <div className="flex flex-col gap-6">
       <Link
@@ -34,7 +37,14 @@ export default async function EditTwelveInchPage({ params }: Props) {
       <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
         Edit 12-inch single
       </h1>
-      <EditTwelveInchForm row={row} />
+      <EditTwelveInchForm
+        row={row}
+        spotifySearch={
+          spotify.enabled
+            ? { enabled: true }
+            : { enabled: false, reason: spotify.reason }
+        }
+      />
     </div>
   );
 }

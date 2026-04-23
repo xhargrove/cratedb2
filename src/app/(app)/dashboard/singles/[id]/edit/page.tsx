@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 
 import { EditSingleForm } from '@/components/singles/edit-single-form';
 import { requireUser } from '@/server/auth/require-user';
+import { getSpotifyIntegrationConfig } from '@/server/spotify/config';
 import { getSingleByIdForOwner } from '@/server/singles/get-by-id-for-owner';
 
 type Props = { params: Promise<{ id: string }> };
@@ -24,6 +25,8 @@ export default async function EditSinglePage({ params }: Props) {
     notFound();
   }
 
+  const spotify = getSpotifyIntegrationConfig();
+
   return (
     <div className="flex flex-col gap-6">
       <Link
@@ -32,7 +35,14 @@ export default async function EditSinglePage({ params }: Props) {
       >
         ← Single
       </Link>
-      <EditSingleForm single={single} />
+      <EditSingleForm
+        single={single}
+        spotifySearch={
+          spotify.enabled
+            ? { enabled: true }
+            : { enabled: false, reason: spotify.reason }
+        }
+      />
     </div>
   );
 }
