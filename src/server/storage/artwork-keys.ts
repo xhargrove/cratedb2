@@ -64,15 +64,3 @@ export function twelveInchArtworkRelativeKey(
   return `${ownerId}/twelve-inch/${twelveInchId}.${ext}`;
 }
 
-/** Optional container cover image — isolated path per container id. */
-export function containerImageRelativeKey(
-  ownerId: string,
-  containerId: string,
-  mimeType: AllowedArtworkMimeType
-): string {
-  assertSegment(ownerId, 'ownerId');
-  assertSegment(containerId, 'containerId');
-  const ext = extensionForMime(mimeType);
-  return `${ownerId}/containers/${containerId}.${ext}`;
-}
-

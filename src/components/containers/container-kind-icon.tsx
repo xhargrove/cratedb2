@@ -1,4 +1,4 @@
-import type { StorageContainerKind } from '@/generated/prisma/client';
+import type { PhysicalSlotKind } from '@/lib/physical-storage-slot';
 
 const iconClass = 'h-10 w-10 text-amber-700 dark:text-amber-400';
 
@@ -6,7 +6,7 @@ export function ContainerKindIcon({
   kind,
   label,
 }: {
-  kind: StorageContainerKind;
+  kind: PhysicalSlotKind;
   label: string;
 }) {
   switch (kind) {
@@ -62,7 +62,7 @@ export function ContainerKindIcon({
   }
 }
 
-export function containerKindLabel(kind: StorageContainerKind): string {
+export function containerKindLabel(kind: PhysicalSlotKind): string {
   switch (kind) {
     case 'SHELF':
       return 'Shelf';

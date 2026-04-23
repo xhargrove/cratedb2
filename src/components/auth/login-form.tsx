@@ -5,11 +5,19 @@ import Link from 'next/link';
 
 import { loginAction } from '@/server/actions/auth';
 
-export function LoginForm() {
+export function LoginForm({
+  callbackUrl,
+}: {
+  /** Safe path starting with `/dashboard` (from server-validated query). */
+  callbackUrl?: string;
+}) {
   const [state, formAction, pending] = useActionState(loginAction, null);
 
   return (
     <form action={formAction} className="flex flex-col gap-4">
+      {callbackUrl ? (
+        <input type="hidden" name="callbackUrl" value={callbackUrl} />
+      ) : null}
       {state?.error ? (
         <p
           className="rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-900 dark:bg-red-950 dark:text-red-200"

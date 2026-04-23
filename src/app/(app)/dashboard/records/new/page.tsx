@@ -2,8 +2,6 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { CreateRecordForm } from '@/components/records/create-record-form';
-import { listContainerSelectOptionsForOwner } from '@/server/containers/list-for-owner';
-import { requireUser } from '@/server/auth/require-user';
 import { getSpotifyIntegrationConfig } from '@/server/spotify/config';
 
 export const metadata: Metadata = {
@@ -11,9 +9,7 @@ export const metadata: Metadata = {
 };
 
 export default async function NewRecordPage() {
-  const user = await requireUser();
   const spotify = getSpotifyIntegrationConfig();
-  const containerOptions = await listContainerSelectOptionsForOwner(user.id);
 
   return (
     <div className="flex flex-col gap-6">
@@ -26,7 +22,6 @@ export default async function NewRecordPage() {
         </Link>
       </div>
       <CreateRecordForm
-        containerOptions={containerOptions}
         spotifySearch={
           spotify.enabled
             ? { enabled: true }

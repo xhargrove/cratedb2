@@ -27,11 +27,24 @@ function applySecurityHeaders(
  */
 export function middleware(request: NextRequest) {
   const hasCookie = Boolean(request.cookies.get(SESSION_COOKIE_NAME)?.value);
+  const dashboardReturn =
+    request.nextUrl.pathname +
+    (request.nextUrl.search ? request.nextUrl.search : '');
 
   if (request.nextUrl.pathname.startsWith('/dashboard') && !hasCookie) {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
+    url.searchParams.set('callbackUrl', dashboardReturn);
     return applySecurityHeaders(NextResponse.redirect(url), request);
+  }
+
+  if (request.nextUrl.pathname.startsWith('/dashboard')) {
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set('x-crate-dashboard-path', dashboardReturn);
+    return applySecurityHeaders(
+      NextResponse.next({ request: { headers: requestHeaders } }),
+      request
+    );
   }
 
   return applySecurityHeaders(NextResponse.next(), request);

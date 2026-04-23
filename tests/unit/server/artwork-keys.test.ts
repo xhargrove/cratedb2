@@ -3,7 +3,6 @@ import { describe, expect, it } from 'vitest';
 import {
   artworkRelativeKey,
   assertValidArtworkKey,
-  containerImageRelativeKey,
   profileImageRelativeKey,
   singleArtworkRelativeKey,
   twelveInchArtworkRelativeKey,
@@ -22,9 +21,6 @@ describe('artwork-keys', () => {
     ).toBe('owner1/twelve-inch/maxi1.webp');
     expect(profileImageRelativeKey('owner1', 'image/gif')).toBe(
       'owner1/profile.gif'
-    );
-    expect(containerImageRelativeKey('owner1', 'cont1', 'image/jpeg')).toBe(
-      'owner1/containers/cont1.jpg'
     );
   });
 

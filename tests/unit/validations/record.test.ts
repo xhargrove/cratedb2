@@ -86,27 +86,6 @@ describe('parseRecordForm', () => {
     }
   });
 
-  it('parses optional container id', () => {
-    const fd = new FormData();
-    fd.set('artist', 'A');
-    fd.set('title', 'B');
-    addStorageNone(fd);
-    fd.set('containerId', 'cuidcontainer1234567890123');
-    const r = parseRecordForm(fd);
-    expect(r.ok).toBe(true);
-    if (r.ok) expect(r.data.containerId).toBe('cuidcontainer1234567890123');
-  });
-
-  it('normalizes empty container id to null', () => {
-    const fd = new FormData();
-    fd.set('artist', 'A');
-    fd.set('title', 'B');
-    addStorageNone(fd);
-    fd.set('containerId', '');
-    const r = parseRecordForm(fd);
-    expect(r.ok).toBe(true);
-    if (r.ok) expect(r.data.containerId).toBeNull();
-  });
 });
 
 function addStorageNone(fd: FormData) {
@@ -116,7 +95,6 @@ function addStorageNone(fd: FormData) {
   fd.set('crateNumber', '');
   fd.set('boxPreset', '');
   fd.set('boxCustomLabel', '');
-  fd.set('containerId', '');
 }
 
 describe('recordBaseFieldsSchema', () => {

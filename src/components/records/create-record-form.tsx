@@ -4,18 +4,13 @@ import { useActionState, useState } from 'react';
 
 import { createRecordAction } from '@/server/actions/records';
 
-import {
-  RecordFormFields,
-  type ContainerSelectOption,
-} from '@/components/records/record-form-fields';
+import { RecordFormFields } from '@/components/records/record-form-fields';
 import { SpotifyAlbumSearch } from '@/components/records/spotify-album-search';
 
 export function CreateRecordForm({
   spotifySearch,
-  containerOptions,
 }: {
   spotifySearch: { enabled: true } | { enabled: false; reason: string };
-  containerOptions: ContainerSelectOption[];
 }) {
   const [state, formAction, pending] = useActionState(createRecordAction, null);
 
@@ -65,11 +60,10 @@ export function CreateRecordForm({
         ) : null}
         <input type="hidden" name="spotifyAlbumId" value={spotifyAlbumId} />
         <RecordFormFields
-          key={spotifyFillKey}
           artworkMode="create"
           defaults={defaults ?? undefined}
           spotifyCoverPreviewUrl={spotifyCoverPreviewUrl}
-          containerOptions={containerOptions}
+          spotifyPrefillRevision={spotifyFillKey}
         />
         <button
           type="submit"

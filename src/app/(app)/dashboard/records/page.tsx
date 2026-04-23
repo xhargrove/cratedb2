@@ -11,6 +11,7 @@ import {
   serializeCollectionParams,
 } from '@/lib/collection-query-params';
 import { COLLECTION_LIST_MAX } from '@/lib/collection-constants';
+import { runWithPgRetry } from '@/db/transient-pg-error';
 import { requireUser } from '@/server/auth/require-user';
 import {
   countRecordsForOwner,
@@ -122,11 +123,15 @@ export default async function RecordsListPage({
     Boolean(urlState.genre) ||
     Boolean(urlState.storageLocation);
 
-  const [{ records, meta }, totalOwned, facets] = await Promise.all([
-    listRecordsWithMetaForOwner(user.id, query),
-    countRecordsForOwner(user.id),
-    getCollectionFacets(user.id),
-  ]);
+  const [{ records, meta }, totalOwned, facets] = await runWithPgRetry(
+    () =>
+      Promise.all([
+        listRecordsWithMetaForOwner(user.id, query),
+        countRecordsForOwner(user.id),
+        getCollectionFacets(user.id),
+      ]),
+    { label: 'records-list' }
+  );
 
   const displayRecords = toDisplayRows(records);
 

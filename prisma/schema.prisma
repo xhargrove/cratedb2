@@ -25,36 +25,8 @@ model User {
   wantlistItems WantlistItem[]
   followsOutgoing UserFollow[] @relation("FollowOutgoing")
   followsIncoming UserFollow[] @relation("FollowIncoming")
-  storageContainers StorageContainer[]
 
   @@index([email])
-}
-
-/// User-defined physical unit (shelf / box / crate) for organizing albums; optional image; QR points at live dashboard URL.
-enum StorageContainerKind {
-  SHELF
-  BOX
-  CRATE
-}
-
-model StorageContainer {
-  id           String               @id @default(cuid())
-  ownerId      String
-  owner        User                 @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  name         String
-  kind         StorageContainerKind
-  locationNote String?
-  /// Relative object key: `{ownerId}/containers/{containerId}.{ext}` (optional custom image).
-  imageKey       String?
-  imageMimeType  String?
-  imageUpdatedAt DateTime?
-  createdAt    DateTime             @default(now())
-  updatedAt    DateTime             @updatedAt
-
-  records CollectionRecord[]
-
-  @@index([ownerId])
-  @@map("storage_containers")
 }
 
 /// Optional display fields (1:1 with User). Separates auth identity from public profile data.
@@ -141,15 +113,10 @@ model CollectionRecord {
   /// Number of physical copies owned (same pressing / listing).
   quantity Int @default(1)
 
-  /// Optional physical container assignment (distinct from facet-oriented `storageKind` / shelf grid fields).
-  containerId String?
-  container   StorageContainer? @relation(fields: [containerId], references: [id], onDelete: SetNull)
-
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([ownerId])
-  @@index([containerId])
   @@map("records")
 }
 

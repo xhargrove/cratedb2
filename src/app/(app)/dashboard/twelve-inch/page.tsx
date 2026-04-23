@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { COLLECTION_LIST_MAX } from '@/lib/collection-constants';
+import { runWithPgRetry } from '@/db/transient-pg-error';
 import { requireUser } from '@/server/auth/require-user';
 import { listTwelveInchForOwner } from '@/server/twelve-inch-singles/list-for-owner';
 
@@ -46,7 +47,10 @@ export default async function TwelveInchListPage({
     ? (COLLECTION_ERROR_MESSAGES[errCode] ?? FALLBACK_ERR)
     : undefined;
 
-  const { twelveInches, total, capped } = await listTwelveInchForOwner(user.id);
+  const { twelveInches, total, capped } = await runWithPgRetry(
+    () => listTwelveInchForOwner(user.id),
+    { label: 'twelve-inch-list' }
+  );
 
   const displayRows: TwelveInchDisplayRow[] = twelveInches.map((s) => ({
     id: s.id,

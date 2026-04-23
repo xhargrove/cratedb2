@@ -37,10 +37,10 @@ The app expects the database schema to match the migration history. If migration
 
 See README § “Artwork storage (S3-compatible object storage)” for privacy and key details.
 
-## Container QR codes
+## Container QR codes (derived physical slots)
 
-- Container cover images use the same artwork pipeline as albums (`imageKey` / object storage).
-- Each QR encodes the **absolute** URL to `/dashboard/containers/[id]` (dashboard auth). Scanning opens the live detail page after sign-in; the payload is only the URL, not inventory data.
+- “Containers” are **virtual**: one card per distinct non-`NONE` physical storage assignment across **albums**, **45s (singles)**, and **12-inch singles** (shelf row/column, crate number, or box preset/custom). There is no separate container table.
+- Each QR encodes the **absolute** URL to `/dashboard/containers/[slotKey]` where `slotKey` is an opaque base64url payload (dashboard auth). Scanning opens the live slot page after sign-in; only the URL is encoded, not inventory data.
 - In production, set **`NEXT_PUBLIC_APP_URL`** to your canonical public origin (for example `https://your-domain.com`) so QR targets stay correct behind reverse proxies. If unset, the app derives the origin from incoming request headers when possible.
 
 ### Migrating existing local artwork objects

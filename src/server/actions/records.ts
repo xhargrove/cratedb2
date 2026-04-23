@@ -15,10 +15,10 @@ import {
 import { parseArtworkFileUpload } from '@/lib/validations/artwork';
 import { parseRecordForm, parseRecordId } from '@/lib/validations/record';
 import { requireUser } from '@/server/auth/require-user';
-import { storageContainerExistsForOwner } from '@/server/containers/assert-owned';
 import { createRecordForOwner } from '@/server/records/create';
 import { deleteRecordForOwner } from '@/server/records/delete';
 import { getRecordByIdForOwner } from '@/server/records/get-by-id-for-owner';
+import { revalidatePhysicalSlotPagesFromRow } from '@/server/records/revalidate-physical-slot-pages';
 import { updateRecordForOwner } from '@/server/records/update';
 import { getSpotifyIntegrationConfig } from '@/server/spotify/config';
 import { fetchSpotifyAlbumCoverBuffer } from '@/server/spotify/fetch-album-cover';
@@ -49,16 +49,6 @@ export async function createRecordAction(
   }
   if (!artworkParsed.ok) {
     return { error: artworkParsed.error };
-  }
-
-  if (parsed.data.containerId) {
-    const allowed = await storageContainerExistsForOwner(
-      parsed.data.containerId,
-      user.id
-    );
-    if (!allowed) {
-      return { error: 'Invalid container selection.' };
-    }
   }
 
   let record;
@@ -125,6 +115,14 @@ export async function createRecordAction(
     }
   }
 
+  revalidatePhysicalSlotPagesFromRow({
+    storageKind: parsed.data.storageKind,
+    shelfRow: parsed.data.shelfRow ?? null,
+    shelfColumn: parsed.data.shelfColumn ?? null,
+    crateNumber: parsed.data.crateNumber ?? null,
+    boxNumber: parsed.data.boxNumber ?? null,
+    boxCustomLabel: parsed.data.boxCustomLabel ?? null,
+  });
   revalidateRecordPaths(record.id);
   redirect(`/dashboard/records/${record.id}`);
 }
@@ -156,16 +154,6 @@ export async function updateRecordAction(
   }
   if (!artworkParsed.ok) {
     return { error: artworkParsed.error };
-  }
-
-  if (parsed.data.containerId) {
-    const allowed = await storageContainerExistsForOwner(
-      parsed.data.containerId,
-      user.id
-    );
-    if (!allowed) {
-      return { error: 'Invalid container selection.' };
-    }
   }
 
   let updated: boolean;
@@ -284,6 +272,22 @@ export async function updateRecordAction(
     );
   }
 
+  revalidatePhysicalSlotPagesFromRow({
+    storageKind: existing.storageKind,
+    shelfRow: existing.shelfRow,
+    shelfColumn: existing.shelfColumn,
+    crateNumber: existing.crateNumber,
+    boxNumber: existing.boxNumber,
+    boxCustomLabel: existing.boxCustomLabel,
+  });
+  revalidatePhysicalSlotPagesFromRow({
+    storageKind: parsed.data.storageKind,
+    shelfRow: parsed.data.shelfRow ?? null,
+    shelfColumn: parsed.data.shelfColumn ?? null,
+    crateNumber: parsed.data.crateNumber ?? null,
+    boxNumber: parsed.data.boxNumber ?? null,
+    boxCustomLabel: parsed.data.boxCustomLabel ?? null,
+  });
   revalidateRecordPaths(idParsed.id);
   redirect(`/dashboard/records/${idParsed.id}`);
 }
@@ -297,6 +301,17 @@ export async function deleteRecordAction(formData: FormData): Promise<void> {
   }
 
   try {
+    const pre = await prisma.collectionRecord.findFirst({
+      where: { id: idParsed.id, ownerId: user.id },
+      select: {
+        storageKind: true,
+        shelfRow: true,
+        shelfColumn: true,
+        crateNumber: true,
+        boxNumber: true,
+        boxCustomLabel: true,
+      },
+    });
     const deleted = await deleteRecordForOwner(idParsed.id, user.id);
     if (!deleted) {
       logger.warn(
@@ -304,6 +319,9 @@ export async function deleteRecordAction(formData: FormData): Promise<void> {
         'deleteRecord: no row or not owner'
       );
       redirect('/dashboard/records?collectionError=delete-not-found');
+    }
+    if (pre) {
+      revalidatePhysicalSlotPagesFromRow(pre);
     }
     revalidateRecordPaths(idParsed.id);
   } catch (e) {

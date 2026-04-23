@@ -30,7 +30,6 @@ export async function updateRecordForOwner(
       notes: data.notes ?? null,
       spotifyAlbumId: data.spotifyAlbumId ?? null,
       quantity: data.quantity,
-      containerId: data.containerId ?? null,
     },
   });
   return result.count === 1;

@@ -23,6 +23,7 @@ import {
 } from '@/server/storage/artwork-store';
 import { getSpotifyIntegrationConfig } from '@/server/spotify/config';
 import { fetchSpotifyTrackCoverBuffer } from '@/server/spotify/fetch-album-cover';
+import { revalidatePhysicalSlotPagesFromRow } from '@/server/records/revalidate-physical-slot-pages';
 import { createTwelveInchForOwner } from '@/server/twelve-inch-singles/create';
 import { deleteTwelveInchForOwner } from '@/server/twelve-inch-singles/delete';
 import { getTwelveInchByIdForOwner } from '@/server/twelve-inch-singles/get-by-id-for-owner';
@@ -149,6 +150,14 @@ export async function createTwelveInchAction(
     }
   }
 
+  revalidatePhysicalSlotPagesFromRow({
+    storageKind: parsed.data.storageKind,
+    shelfRow: parsed.data.shelfRow ?? null,
+    shelfColumn: parsed.data.shelfColumn ?? null,
+    crateNumber: parsed.data.crateNumber ?? null,
+    boxNumber: parsed.data.boxNumber ?? null,
+    boxCustomLabel: parsed.data.boxCustomLabel ?? null,
+  });
   revalidateTwelveInchPaths(row.id);
   redirect(`/dashboard/twelve-inch/${row.id}`);
 }
@@ -223,6 +232,22 @@ export async function updateTwelveInchAction(
     };
   }
 
+  revalidatePhysicalSlotPagesFromRow({
+    storageKind: existing.storageKind,
+    shelfRow: existing.shelfRow,
+    shelfColumn: existing.shelfColumn,
+    crateNumber: existing.crateNumber,
+    boxNumber: existing.boxNumber,
+    boxCustomLabel: existing.boxCustomLabel,
+  });
+  revalidatePhysicalSlotPagesFromRow({
+    storageKind: parsed.data.storageKind,
+    shelfRow: parsed.data.shelfRow ?? null,
+    shelfColumn: parsed.data.shelfColumn ?? null,
+    crateNumber: parsed.data.crateNumber ?? null,
+    boxNumber: parsed.data.boxNumber ?? null,
+    boxCustomLabel: parsed.data.boxCustomLabel ?? null,
+  });
   revalidateTwelveInchPaths(idParsed.id);
   redirect(`/dashboard/twelve-inch/${idParsed.id}`);
 }
@@ -236,9 +261,20 @@ export async function deleteTwelveInchAction(formData: FormData): Promise<void> 
   }
 
   try {
+    const existing = await getTwelveInchByIdForOwner(idParsed.id, user.id);
     const deleted = await deleteTwelveInchForOwner(idParsed.id, user.id);
     if (!deleted) {
       redirect('/dashboard/twelve-inch?collectionError=delete-not-found');
+    }
+    if (existing) {
+      revalidatePhysicalSlotPagesFromRow({
+        storageKind: existing.storageKind,
+        shelfRow: existing.shelfRow,
+        shelfColumn: existing.shelfColumn,
+        crateNumber: existing.crateNumber,
+        boxNumber: existing.boxNumber,
+        boxCustomLabel: existing.boxCustomLabel,
+      });
     }
     revalidateTwelveInchPaths(idParsed.id);
   } catch (e) {

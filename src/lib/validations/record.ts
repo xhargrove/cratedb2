@@ -1,6 +1,5 @@
 import { z } from 'zod';
 
-import { parseRecordContainerIdField } from '@/lib/validations/container';
 import {
   parseStorageAssignmentFromForm,
   rawStorageAssignmentSchema,
@@ -46,10 +45,7 @@ export const recordBaseFieldsSchema = z.object({
 
 /** Full record write shape — storage fields match `NormalizedPhysicalStorage`. */
 export type RecordWriteFields = z.infer<typeof recordBaseFieldsSchema> &
-  z.infer<typeof rawStorageAssignmentSchema> & {
-    /** Optional physical container; `null` clears assignment. */
-    containerId: string | null;
-  };
+  z.infer<typeof rawStorageAssignmentSchema>;
 
 /** Route / form record id (opaque string; validated again server-side with ownership). */
 export const recordIdSchema = z.string().trim().min(1, 'Record id is required');
@@ -81,17 +77,11 @@ export function parseRecordForm(formData: FormData) {
     };
   }
 
-  const containerParsed = parseRecordContainerIdField(formData);
-  if (!containerParsed.ok) {
-    return { ok: false as const, error: containerParsed.error };
-  }
-
   return {
     ok: true as const,
     data: {
       ...parsed.data,
       ...storageParsed.data,
-      containerId: containerParsed.containerId,
     },
   };
 }

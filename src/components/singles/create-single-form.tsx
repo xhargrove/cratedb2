@@ -60,10 +60,10 @@ export function CreateSingleForm({
         ) : null}
         <input type="hidden" name="spotifyTrackId" value={spotifyTrackId} />
         <SingleFormFields
-          key={fillKey}
           artworkMode="create"
           defaults={defaults ?? undefined}
           spotifyCoverPreviewUrl={spotifyCoverPreviewUrl}
+          spotifyPrefillRevision={fillKey}
         />
         <button
           type="submit"

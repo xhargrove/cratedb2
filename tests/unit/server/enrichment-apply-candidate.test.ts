@@ -68,7 +68,6 @@ describe('applyMetadataCandidateForRecord', () => {
       metadataAppliedAt: null,
       spotifyAlbumId: null,
       quantity: 1,
-      containerId: null,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -118,7 +117,6 @@ describe('applyMetadataCandidateForRecord', () => {
       metadataAppliedAt: null,
       spotifyAlbumId: null,
       quantity: 1,
-      containerId: null,
       createdAt: new Date(),
       updatedAt: new Date(),
     });

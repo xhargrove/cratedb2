@@ -25,7 +25,6 @@ export async function createRecordForOwner(
       notes: data.notes ?? null,
       spotifyAlbumId: data.spotifyAlbumId ?? null,
       quantity: data.quantity,
-      containerId: data.containerId ?? null,
     },
   });
 }

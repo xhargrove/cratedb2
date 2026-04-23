@@ -2,12 +2,35 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { LoginForm } from '@/components/auth/login-form';
+import { parseDashboardCallbackPath } from '@/lib/safe-callback-path';
 
 export const metadata: Metadata = {
   title: 'Log in · Cratedb',
 };
 
-export default function LoginPage() {
+function firstParam(
+  raw: Record<string, string | string[] | undefined>,
+  key: string
+): string | undefined {
+  const v = raw[key];
+  if (v === undefined) return undefined;
+  return Array.isArray(v) ? v[0] : v;
+}
+
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  let callbackUrl: string | undefined;
+  try {
+    const sp = await searchParams;
+    callbackUrl =
+      parseDashboardCallbackPath(firstParam(sp, 'callbackUrl')) ?? undefined;
+  } catch {
+    callbackUrl = undefined;
+  }
+
   return (
     <div className="flex flex-col gap-6">
       <div className="text-center">
@@ -18,7 +41,7 @@ export default function LoginPage() {
           Access your collection
         </p>
       </div>
-      <LoginForm />
+      <LoginForm callbackUrl={callbackUrl} />
       <p className="text-center text-sm text-zinc-500">
         <Link href="/" className="underline underline-offset-4">
           ← Home

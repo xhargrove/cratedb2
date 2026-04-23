@@ -20,6 +20,3 @@ export const MAX_SEARCH_Q_LENGTH = 200;
 export const MAX_GENRE_URL_LENGTH = 200;
 export const MAX_STORAGE_URL_LENGTH = 500;
 
-/** Physical storage containers (shelf / box / crate). */
-export const CONTAINER_NAME_MAX = 120;
-export const CONTAINER_LOCATION_NOTE_MAX = 500;

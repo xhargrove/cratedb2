@@ -7,10 +7,7 @@ import { recordArtworkUrl } from '@/lib/record-artwork-url';
 import { storageAssignmentDefaultsFromRow } from '@/lib/storage-form-defaults';
 import { updateRecordAction } from '@/server/actions/records';
 
-import {
-  RecordFormFields,
-  type ContainerSelectOption,
-} from '@/components/records/record-form-fields';
+import { RecordFormFields } from '@/components/records/record-form-fields';
 import { SpotifyAlbumSearch } from '@/components/records/spotify-album-search';
 
 type RecordRow = {
@@ -31,7 +28,6 @@ type RecordRow = {
   artworkKey: string | null;
   artworkUpdatedAt: Date | string | null;
   spotifyAlbumId: string | null;
-  containerId: string | null;
 };
 
 function applySpotifyToFormFields(
@@ -56,11 +52,9 @@ function applySpotifyToFormFields(
 export function EditRecordForm({
   record,
   spotifySearch,
-  containerOptions,
 }: {
   record: RecordRow;
   spotifySearch: { enabled: true } | { enabled: false; reason: string };
-  containerOptions: ContainerSelectOption[];
 }) {
   const [state, formAction, pending] = useActionState(updateRecordAction, null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -118,7 +112,6 @@ export function EditRecordForm({
           artworkMode="edit"
           artworkPreviewUrl={artworkPreviewUrl}
           spotifyCoverPreviewUrl={spotifyCoverPreviewUrl}
-          containerOptions={containerOptions}
           defaults={{
             artist: record.artist,
             title: record.title,
@@ -127,7 +120,6 @@ export function EditRecordForm({
             genre: record.genre,
             storage: storageAssignmentDefaultsFromRow(record),
             notes: record.notes,
-            containerId: record.containerId,
           }}
         />
         <button

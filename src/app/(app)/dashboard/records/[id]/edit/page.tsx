@@ -6,7 +6,6 @@ import { EditRecordForm } from '@/components/records/edit-record-form';
 import { RecordEnrichmentPanel } from '@/components/records/record-enrichment-panel';
 import { getEnrichmentConfig } from '@/server/enrichment/config';
 import { getSpotifyIntegrationConfig } from '@/server/spotify/config';
-import { listContainerSelectOptionsForOwner } from '@/server/containers/list-for-owner';
 import { requireUser } from '@/server/auth/require-user';
 import { getRecordByIdForOwner } from '@/server/records/get-by-id-for-owner';
 
@@ -29,8 +28,6 @@ export default async function EditRecordPage({ params }: Props) {
     notFound();
   }
 
-  const containerOptions = await listContainerSelectOptionsForOwner(user.id);
-
   const enrichment = getEnrichmentConfig();
   const spotify = getSpotifyIntegrationConfig();
 
@@ -48,7 +45,6 @@ export default async function EditRecordPage({ params }: Props) {
         Edit record
       </h1>
       <EditRecordForm
-        containerOptions={containerOptions}
         record={record}
         spotifySearch={
           spotify.enabled

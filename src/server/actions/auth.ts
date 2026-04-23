@@ -14,9 +14,10 @@ import {
   setSessionCookie,
 } from '@/server/auth/session-cookie';
 import { createSession, destroySession } from '@/server/auth/session-service';
+import { parseDashboardCallbackPath } from '@/lib/safe-callback-path';
 import { parseLoginForm, parseSignupForm } from '@/lib/validations/auth';
 import { logger } from '@/lib/logger';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/client';
+import { Prisma } from '@/generated/prisma/client';
 
 export type AuthActionState = { error?: string } | null;
 const GENERIC_AUTH_FAILURE = 'Unable to authenticate right now. Try again.';
@@ -57,14 +58,15 @@ export async function signupAction(
     const sessionId = await createSession(user.id);
     await setSessionCookie(sessionId);
   } catch (e) {
-    if (e instanceof PrismaClientKnownRequestError && e.code === 'P2002') {
+    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
       return { error: GENERIC_AUTH_FAILURE };
     }
     logger.error({ err: e }, 'signup failed');
     return { error: GENERIC_AUTH_FAILURE };
   }
 
-  redirect('/dashboard');
+  const afterSignup = parseDashboardCallbackPath(formData.get('callbackUrl'));
+  redirect(afterSignup ?? '/dashboard');
 }
 
 export async function loginAction(
@@ -99,7 +101,8 @@ export async function loginAction(
   const sessionId = await createSession(user.id);
   await setSessionCookie(sessionId);
 
-  redirect('/dashboard');
+  const afterLogin = parseDashboardCallbackPath(formData.get('callbackUrl'));
+  redirect(afterLogin ?? '/dashboard');
 }
 
 export async function logoutAction(): Promise<void> {

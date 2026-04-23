@@ -1,3 +1,7 @@
+'use client';
+
+import { useEffect, useRef } from 'react';
+
 import { RecordArtworkImage } from '@/components/records/record-artwork-image';
 import { StorageAssignmentFields } from '@/components/storage/storage-assignment-fields';
 
@@ -19,14 +23,37 @@ export function SingleFormFields({
   artworkMode,
   artworkPreviewUrl,
   spotifyCoverPreviewUrl,
+  spotifyPrefillRevision,
 }: {
   defaults?: Defaults;
   artworkMode?: 'create' | 'edit';
   artworkPreviewUrl?: string | null;
   /** Spotify album art preview when user picked a song from search. */
   spotifyCoverPreviewUrl?: string | null;
+  spotifyPrefillRevision?: string;
 }) {
   const showArtwork = artworkMode === 'create' || artworkMode === 'edit';
+
+  const artistRef = useRef<HTMLInputElement>(null);
+  const titleRef = useRef<HTMLInputElement>(null);
+  const bSideRef = useRef<HTMLInputElement>(null);
+  const yearRef = useRef<HTMLInputElement>(null);
+  const genreRef = useRef<HTMLInputElement>(null);
+  const defaultsRef = useRef(defaults);
+  defaultsRef.current = defaults;
+
+  useEffect(() => {
+    if (artworkMode !== 'create') return;
+    if (!spotifyPrefillRevision || spotifyPrefillRevision === 'initial') return;
+    const d = defaultsRef.current;
+    if (!d) return;
+    if (artistRef.current) artistRef.current.value = d.artist ?? '';
+    if (titleRef.current) titleRef.current.value = d.title ?? '';
+    if (bSideRef.current) bSideRef.current.value = d.bSideTitle ?? '';
+    if (yearRef.current)
+      yearRef.current.value = d.year != null ? String(d.year) : '';
+    if (genreRef.current) genreRef.current.value = d.genre ?? '';
+  }, [artworkMode, spotifyPrefillRevision]);
 
   return (
     <>
@@ -84,6 +111,7 @@ export function SingleFormFields({
         <label className="flex flex-col gap-1 text-xs font-medium text-zinc-700 dark:text-zinc-300">
           Artist
           <input
+            ref={artistRef}
             name="artist"
             required
             defaultValue={defaults?.artist ?? ''}
@@ -94,6 +122,7 @@ export function SingleFormFields({
         <label className="flex flex-col gap-1 text-xs font-medium text-zinc-700 dark:text-zinc-300">
           A-side (main song)
           <input
+            ref={titleRef}
             name="title"
             required
             defaultValue={defaults?.title ?? ''}
@@ -106,6 +135,7 @@ export function SingleFormFields({
       <label className="flex flex-col gap-1 text-xs font-medium text-zinc-700 dark:text-zinc-300">
         B-side (optional)
         <input
+          ref={bSideRef}
           name="bSideTitle"
           defaultValue={defaults?.bSideTitle ?? ''}
           className="rounded border border-zinc-300 px-2 py-1.5 text-sm dark:border-zinc-600 dark:bg-zinc-950"
@@ -117,6 +147,7 @@ export function SingleFormFields({
         <label className="flex flex-col gap-1 text-xs font-medium text-zinc-700 dark:text-zinc-300">
           Year
           <input
+            ref={yearRef}
             name="year"
             type="number"
             min={1900}
@@ -144,6 +175,7 @@ export function SingleFormFields({
         <label className="flex flex-col gap-1 text-xs font-medium text-zinc-700 dark:text-zinc-300">
           Genre
           <input
+            ref={genreRef}
             name="genre"
             defaultValue={defaults?.genre ?? ''}
             className="rounded border border-zinc-300 px-2 py-1.5 text-sm dark:border-zinc-600 dark:bg-zinc-950"

@@ -63,10 +63,10 @@ export function CreateTwelveInchForm({
         ) : null}
         <input type="hidden" name="spotifyTrackId" value={spotifyTrackId} />
         <TwelveInchFormFields
-          key={fillKey}
           artworkMode="create"
           defaults={defaults ?? undefined}
           spotifyCoverPreviewUrl={spotifyCoverPreviewUrl}
+          spotifyPrefillRevision={fillKey}
         />
         <button
           type="submit"

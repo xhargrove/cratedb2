@@ -20,6 +20,7 @@ import {
 } from '@/server/storage/artwork-store';
 import { getSpotifyIntegrationConfig } from '@/server/spotify/config';
 import { fetchSpotifyTrackCoverBuffer } from '@/server/spotify/fetch-album-cover';
+import { revalidatePhysicalSlotPagesFromRow } from '@/server/records/revalidate-physical-slot-pages';
 import { createSingleForOwner } from '@/server/singles/create';
 import { deleteSingleForOwner } from '@/server/singles/delete';
 import { getSingleByIdForOwner } from '@/server/singles/get-by-id-for-owner';
@@ -146,6 +147,14 @@ export async function createSingleAction(
     }
   }
 
+  revalidatePhysicalSlotPagesFromRow({
+    storageKind: parsed.data.storageKind,
+    shelfRow: parsed.data.shelfRow ?? null,
+    shelfColumn: parsed.data.shelfColumn ?? null,
+    crateNumber: parsed.data.crateNumber ?? null,
+    boxNumber: parsed.data.boxNumber ?? null,
+    boxCustomLabel: parsed.data.boxCustomLabel ?? null,
+  });
   revalidateSinglePaths(single.id);
   redirect(`/dashboard/singles/${single.id}`);
 }
@@ -218,6 +227,22 @@ export async function updateSingleAction(
     };
   }
 
+  revalidatePhysicalSlotPagesFromRow({
+    storageKind: existing.storageKind,
+    shelfRow: existing.shelfRow,
+    shelfColumn: existing.shelfColumn,
+    crateNumber: existing.crateNumber,
+    boxNumber: existing.boxNumber,
+    boxCustomLabel: existing.boxCustomLabel,
+  });
+  revalidatePhysicalSlotPagesFromRow({
+    storageKind: parsed.data.storageKind,
+    shelfRow: parsed.data.shelfRow ?? null,
+    shelfColumn: parsed.data.shelfColumn ?? null,
+    crateNumber: parsed.data.crateNumber ?? null,
+    boxNumber: parsed.data.boxNumber ?? null,
+    boxCustomLabel: parsed.data.boxCustomLabel ?? null,
+  });
   revalidateSinglePaths(idParsed.id);
   redirect(`/dashboard/singles/${idParsed.id}`);
 }
@@ -231,9 +256,20 @@ export async function deleteSingleAction(formData: FormData): Promise<void> {
   }
 
   try {
+    const existing = await getSingleByIdForOwner(idParsed.id, user.id);
     const deleted = await deleteSingleForOwner(idParsed.id, user.id);
     if (!deleted) {
       redirect('/dashboard/singles?collectionError=delete-not-found');
+    }
+    if (existing) {
+      revalidatePhysicalSlotPagesFromRow({
+        storageKind: existing.storageKind,
+        shelfRow: existing.shelfRow,
+        shelfColumn: existing.shelfColumn,
+        crateNumber: existing.crateNumber,
+        boxNumber: existing.boxNumber,
+        boxCustomLabel: existing.boxCustomLabel,
+      });
     }
     revalidateSinglePaths(idParsed.id);
   } catch (e) {

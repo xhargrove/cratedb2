@@ -5,6 +5,7 @@ import {
   COLLECTION_LIST_MAX,
   MAX_SEARCH_Q_LENGTH,
 } from '@/lib/collection-constants';
+import { runWithPgRetry } from '@/db/transient-pg-error';
 import { requireUser } from '@/server/auth/require-user';
 import { listSinglesForOwner } from '@/server/singles/list-for-owner';
 
@@ -50,9 +51,13 @@ export default async function SinglesPage({
     ? (COLLECTION_ERROR_MESSAGES[errCode] ?? FALLBACK_ERR)
     : undefined;
 
-  const { singles, total, capped } = await listSinglesForOwner(user.id, {
-    search: q || undefined,
-  });
+  const { singles, total, capped } = await runWithPgRetry(
+    () =>
+      listSinglesForOwner(user.id, {
+        search: q || undefined,
+      }),
+    { label: 'singles-list' }
+  );
 
   const displaySingles: SingleDisplayRow[] = singles.map((s) => ({
     id: s.id,
@@ -71,7 +76,7 @@ export default async function SinglesPage({
   if (total > 0 && !q) {
     subtitle = capped
       ? `Showing first ${displaySingles.length.toLocaleString()} of ${total.toLocaleString()} (max ${COLLECTION_LIST_MAX.toLocaleString()} per page)`
-      : `${total.toLocaleString()} in your singles crate`;
+      : `${total.toLocaleString()} on file`;
   } else if (total > 0 && q) {
     subtitle = capped
       ? `Showing first ${displaySingles.length.toLocaleString()} of ${total.toLocaleString()} matching singles (max ${COLLECTION_LIST_MAX.toLocaleString()} per page)`

@@ -36,8 +36,8 @@ export function ContainerQrPanel({
         QR code
       </h2>
       <p className="text-xs text-zinc-600 dark:text-zinc-400">
-        Scanning opens this page with live contents. Only the link is encoded — not
-        your inventory data.
+        Scanning opens this page with live contents after you sign in (you&apos;ll
+        land back here). Only the link is encoded — not your inventory data.
       </p>
       {/* eslint-disable-next-line @next/next/no-img-element -- data URL from server */}
       <img

@@ -1,13 +1,13 @@
 /**
- * Stable path for a container in the authenticated dashboard.
- * QR codes encode an absolute URL built from {@link resolvePublicAppOrigin}.
+ * Stable path for a virtual container (physical storage slot) in the dashboard.
+ * `slotKey` is base64url JSON from {@link encodePhysicalSlotKey}.
  */
-export function containerDashboardPath(containerId: string): string {
-  return `/dashboard/containers/${containerId}`;
+export function containerDashboardPath(slotKey: string): string {
+  return `/dashboard/containers/${slotKey}`;
 }
 
-/** Absolute URL scanned by QR codes (no embedded inventory — live page only). */
-export function buildContainerScanUrl(origin: string, containerId: string): string {
+/** Absolute URL for QR scans — encodes slot only, not record payloads. */
+export function buildContainerScanUrl(origin: string, slotKey: string): string {
   const base = origin.replace(/\/$/, '');
-  return `${base}${containerDashboardPath(containerId)}`;
+  return `${base}${containerDashboardPath(slotKey)}`;
 }

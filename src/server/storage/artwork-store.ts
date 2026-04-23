@@ -37,15 +37,18 @@ function createArtworkStore(): ArtworkStore {
   });
 }
 
+/**
+ * One store per Node process on all environments. Caching only in dev used to
+ * spawn a new S3 client (or local store) on **every** image request in
+ * production — parallel grid loads could exhaust sockets and return 500s.
+ */
 export function getArtworkStore(): ArtworkStore {
   if (globalForArtworkStore.artworkStore) {
     return globalForArtworkStore.artworkStore;
   }
 
   const store = createArtworkStore();
-  if (process.env.NODE_ENV !== 'production') {
-    globalForArtworkStore.artworkStore = store;
-  }
+  globalForArtworkStore.artworkStore = store;
   return store;
 }
 

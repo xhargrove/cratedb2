@@ -1,4 +1,5 @@
 import { prisma } from '@/db/client';
+import { isTransientPgError, pgRetryDelayMs } from '@/db/transient-pg-error';
 import type { Prisma } from '@/generated/prisma/client';
 import { logger } from '@/lib/logger';
 import { SESSION_MAX_DAYS } from '@/server/auth/constants';
@@ -36,7 +37,9 @@ export async function getUserForSessionToken(sessionId: string | undefined) {
 
   let session: SessionWithUser | null = null;
 
-  for (let attempt = 1; attempt <= 2; attempt += 1) {
+  const maxAttempts = 5;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
     try {
       session = await prisma.session.findUnique({
         where: { id: sessionId },
@@ -49,20 +52,17 @@ export async function getUserForSessionToken(sessionId: string | undefined) {
       break;
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      const isTransientConnectionIssue =
-        message.includes('Server has closed the connection') ||
-        message.includes('Connection terminated unexpectedly') ||
-        message.includes('ECONNRESET');
 
-      if (!isTransientConnectionIssue) {
+      if (!isTransientPgError(message)) {
         throw err;
       }
 
-      if (attempt < 2) {
+      if (attempt < maxAttempts) {
         logger.warn(
           { sessionId, err: message, attempt },
-          'session lookup transient DB failure; retrying once'
+          'session lookup transient DB failure; retrying'
         );
+        await pgRetryDelayMs(attempt);
         continue;
       }
 
