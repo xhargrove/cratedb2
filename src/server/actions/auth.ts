@@ -2,7 +2,6 @@
 
 import { redirect } from 'next/navigation';
 
-import { prisma } from '@/db/client';
 import {
   enforceLoginRateLimit,
   enforceSignupRateLimit,
@@ -17,9 +16,18 @@ import { createSession, destroySession } from '@/server/auth/session-service';
 import { parseDashboardCallbackPath } from '@/lib/safe-callback-path';
 import { parseLoginForm, parseSignupForm } from '@/lib/validations/auth';
 import { logger } from '@/lib/logger';
-import { Prisma } from '@/generated/prisma/client';
 
 export type AuthActionState = { error?: string } | null;
+
+/** Avoid importing `@/generated/prisma/client` here — that loads Prisma's module bootstrap on every auth chunk (including GET /login via LoginForm → loginAction). */
+function isPrismaUniqueViolation(e: unknown): boolean {
+  return (
+    typeof e === 'object' &&
+    e !== null &&
+    'code' in e &&
+    (e as { code?: unknown }).code === 'P2002'
+  );
+}
 const GENERIC_AUTH_FAILURE = 'Unable to authenticate right now. Try again.';
 
 export async function signupAction(
@@ -43,6 +51,7 @@ export async function signupAction(
   const passwordHash = await hashPassword(parsed.data.password);
 
   try {
+    const { prisma } = await import('@/db/client');
     const user = await prisma.user.create({
       data: {
         email: parsed.data.email,
@@ -58,7 +67,7 @@ export async function signupAction(
     const sessionId = await createSession(user.id);
     await setSessionCookie(sessionId);
   } catch (e) {
-    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
+    if (isPrismaUniqueViolation(e)) {
       return { error: GENERIC_AUTH_FAILURE };
     }
     logger.error({ err: e }, 'signup failed');
@@ -87,6 +96,7 @@ export async function loginAction(
     return { error: GENERIC_AUTH_FAILURE };
   }
 
+  const { prisma } = await import('@/db/client');
   const user = await prisma.user.findUnique({
     where: { email: parsed.data.email },
   });

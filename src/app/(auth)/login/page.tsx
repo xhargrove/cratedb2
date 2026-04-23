@@ -9,9 +9,10 @@ export const metadata: Metadata = {
 };
 
 function firstParam(
-  raw: Record<string, string | string[] | undefined>,
+  raw: Record<string, string | string[] | undefined> | null | undefined,
   key: string
 ): string | undefined {
+  if (raw == null) return undefined;
   const v = raw[key];
   if (v === undefined) return undefined;
   return Array.isArray(v) ? v[0] : v;

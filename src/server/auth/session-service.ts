@@ -1,4 +1,3 @@
-import { prisma } from '@/db/client';
 import { isTransientPgError, pgRetryDelayMs } from '@/db/transient-pg-error';
 import type { Prisma } from '@/generated/prisma/client';
 import { logger } from '@/lib/logger';
@@ -9,6 +8,7 @@ type SessionWithUser = Prisma.SessionGetPayload<{
 }>;
 
 export async function createSession(userId: string): Promise<string> {
+  const { prisma } = await import('@/db/client');
   const expiresAt = new Date(
     Date.now() + SESSION_MAX_DAYS * 24 * 60 * 60 * 1000
   );
@@ -22,6 +22,7 @@ export async function createSession(userId: string): Promise<string> {
 }
 
 export async function destroySession(sessionId: string): Promise<void> {
+  const { prisma } = await import('@/db/client');
   try {
     await prisma.session.delete({ where: { id: sessionId } });
   } catch {
@@ -34,6 +35,8 @@ export async function destroySession(sessionId: string): Promise<void> {
  */
 export async function getUserForSessionToken(sessionId: string | undefined) {
   if (!sessionId) return null;
+
+  const { prisma } = await import('@/db/client');
 
   let session: SessionWithUser | null = null;
 
