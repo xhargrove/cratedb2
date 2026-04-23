@@ -16,12 +16,25 @@ export async function register() {
 
   const { getServerEnv } = await import('@/lib/env');
   // Fail fast during Node runtime startup if required env is missing/invalid.
-  getServerEnv();
+  const serverEnv = getServerEnv();
 
   globalThis.__cratedbInstrumentationRegistered = true;
 
   const { logger } = await import('@/lib/logger');
   logger.info('Cratedb server instrumentation loaded');
+
+  if (
+    process.env.NODE_ENV === 'production' &&
+    serverEnv.ARTWORK_STORAGE_BACKEND === 'local'
+  ) {
+    logger.warn(
+      {
+        cratedb_event: 'artwork_storage_local_in_production',
+        vercel: process.env.VERCEL === '1',
+      },
+      'ARTWORK_STORAGE_BACKEND is local in production. Artwork files are written to the app disk; on serverless hosts this is ephemeral and not shared across instances — configure S3 (see docs/DEPLOYMENT.md § Artwork storage).'
+    );
+  }
 }
 
 /**
