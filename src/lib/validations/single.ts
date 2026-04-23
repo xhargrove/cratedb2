@@ -34,10 +34,7 @@ export const singleWriteFormSchema = z.object({
 
 export type SingleWriteFields = z.infer<typeof singleWriteFormSchema>;
 
-export const singleIdSchema = z
-  .string()
-  .trim()
-  .min(1, 'Single id is required');
+export const singleIdSchema = z.string().trim().min(1, 'Single id is required');
 
 export function parseSingleForm(formData: FormData) {
   const raw = {

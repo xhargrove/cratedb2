@@ -98,8 +98,13 @@ export async function createSingleAction(
         prevKey: null,
       });
     } catch (e) {
-      logger.error({ err: e, singleId: single.id }, 'createSingle artwork failed');
-      await prisma.collectionSingle.delete({ where: { id: single.id } }).catch(() => {});
+      logger.error(
+        { err: e, singleId: single.id },
+        'createSingle artwork failed'
+      );
+      await prisma.collectionSingle
+        .delete({ where: { id: single.id } })
+        .catch(() => {});
       return {
         error:
           'Could not save sleeve art. The single was not created. Try a smaller image.',
@@ -154,7 +159,9 @@ export async function updateSingleAction(
 
   const existing = await getSingleByIdForOwner(idParsed.id, user.id);
   if (!existing) {
-    return { error: 'Single not found or you do not have permission to edit it.' };
+    return {
+      error: 'Single not found or you do not have permission to edit it.',
+    };
   }
 
   const parsed = parseSingleForm(formData);
@@ -173,7 +180,9 @@ export async function updateSingleAction(
   }
 
   if (!updated) {
-    return { error: 'Single not found or you do not have permission to update it.' };
+    return {
+      error: 'Single not found or you do not have permission to update it.',
+    };
   }
 
   try {
@@ -197,7 +206,10 @@ export async function updateSingleAction(
       });
     }
   } catch (e) {
-    logger.error({ err: e, singleId: idParsed.id }, 'updateSingle artwork failed');
+    logger.error(
+      { err: e, singleId: idParsed.id },
+      'updateSingle artwork failed'
+    );
     return {
       error:
         'Could not update sleeve art. Text fields were saved; try uploading again.',

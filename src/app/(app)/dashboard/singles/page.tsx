@@ -18,8 +18,7 @@ const COLLECTION_ERROR_MESSAGES: Record<string, string> = {
     'Could not delete: invalid or missing id. Nothing was removed.',
   'delete-not-found':
     'Could not delete: single was not found or you do not have access.',
-  'delete-failed':
-    'Could not delete the single due to a server error.',
+  'delete-failed': 'Could not delete the single due to a server error.',
 };
 
 const FALLBACK_ERR =

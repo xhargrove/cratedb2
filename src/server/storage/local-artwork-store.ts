@@ -7,9 +7,13 @@ import {
 } from '@/lib/validations/artwork';
 
 /**
- * Local filesystem artwork store. Single strategy for Phase 5; paths are
- * relative keys (`{ownerId}/{recordId}.{ext}`) so an object-storage backend can
- * swap in later without changing callers.
+ * Local filesystem artwork store. Paths in the DB are relative keys so a
+ * different backend can swap in later.
+ *
+ * **Deployment:** Default root is `path.join(process.cwd(), 'storage', 'artwork')`.
+ * In production, `process.cwd()` is the app working directory (not a dev path).
+ * Use `ARTWORK_STORAGE_ROOT` for an absolute path, typically on a **persistent**
+ * mount — ephemeral serverless disks drop data on redeploy.
  */
 
 export function getArtworkStorageRoot(): string {

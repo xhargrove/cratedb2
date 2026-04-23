@@ -44,8 +44,8 @@ export function SpotifyAlbumSearch({
       </p>
       <p className="text-xs text-zinc-600 dark:text-zinc-400">
         Uses your app&apos;s credentials on the server — no Spotify login
-        required. Pick a result to fill fields and preview cover art (genre
-        when Spotify provides it). You can edit before saving.
+        required. Pick a result to fill fields and preview cover art (genre when
+        Spotify provides it). You can edit before saving.
       </p>
       <form action={action} className="flex flex-wrap gap-2">
         <input

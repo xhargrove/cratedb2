@@ -208,16 +208,11 @@ export async function updateRecordAction(
   }
 
   try {
-    if (
-      artworkParsed.kind === 'absent' &&
-      parsed.data.spotifyAlbumId?.trim()
-    ) {
+    if (artworkParsed.kind === 'absent' && parsed.data.spotifyAlbumId?.trim()) {
       const row = await getRecordByIdForOwner(idParsed.id, user.id);
-      const replaceWithSpotify =
-        formData.get('applySpotifyArtwork') === '1';
+      const replaceWithSpotify = formData.get('applySpotifyArtwork') === '1';
       const shouldFetchSpotifyCover =
-        row &&
-        (replaceWithSpotify || !row.artworkKey);
+        row && (replaceWithSpotify || !row.artworkKey);
 
       if (shouldFetchSpotifyCover) {
         const cfg = getSpotifyIntegrationConfig();

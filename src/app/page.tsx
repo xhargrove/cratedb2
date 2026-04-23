@@ -7,10 +7,7 @@ export default async function Home() {
 
   return (
     <div className="relative flex min-h-screen flex-col overflow-hidden bg-background text-foreground">
-      <div
-        className="pointer-events-none absolute inset-0 -z-10"
-        aria-hidden
-      >
+      <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden>
         <div className="absolute -left-32 top-1/4 h-[28rem] w-[28rem] rounded-full bg-amber-500/15 blur-3xl dark:bg-amber-500/10" />
         <div className="absolute -right-20 bottom-0 h-80 w-80 rounded-full bg-zinc-400/20 blur-3xl dark:bg-zinc-600/15" />
         <div className="absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full border border-zinc-200/60 dark:border-zinc-700/50" />

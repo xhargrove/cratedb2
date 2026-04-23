@@ -18,7 +18,8 @@ function createPrismaClient(): PrismaClient {
   }
 
   const poolUrl = normalizeDatabaseUrlForPgPool(connectionString);
-  const pool = globalForPrisma.pgPool ?? new Pool({ connectionString: poolUrl });
+  const pool =
+    globalForPrisma.pgPool ?? new Pool({ connectionString: poolUrl });
   if (process.env.NODE_ENV !== 'production') {
     globalForPrisma.pgPool = pool;
   }

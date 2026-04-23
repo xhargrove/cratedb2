@@ -3,15 +3,23 @@ import { z } from 'zod';
 import { ProfileVibe } from '@/generated/prisma/client';
 
 export const profileUpdateSchema = z.object({
-  displayName: z.preprocess((v) => {
-    if (v == null) return '';
-    return String(v).trim();
-  }, z.string().max(120, 'Display name is too long')),
-  bio: z.preprocess((v) => {
-    if (v == null) return '';
-    return String(v).trim();
-  }, z.string().max(500, 'Bio is too long')),
-  vibe: z.nativeEnum(ProfileVibe, { message: 'Pick how you show up on Cratedb' }),
+  displayName: z.preprocess(
+    (v) => {
+      if (v == null) return '';
+      return String(v).trim();
+    },
+    z.string().max(120, 'Display name is too long')
+  ),
+  bio: z.preprocess(
+    (v) => {
+      if (v == null) return '';
+      return String(v).trim();
+    },
+    z.string().max(500, 'Bio is too long')
+  ),
+  vibe: z.nativeEnum(ProfileVibe, {
+    message: 'Pick how you show up on Cratedb',
+  }),
   collectionPublic: z.preprocess((v) => {
     return v === '1' || v === 'on' || v === true;
   }, z.boolean()),

@@ -18,8 +18,6 @@ export function pickBestSpotifyImageUrl(images: unknown): string | null {
 
   if (parsed.length === 0) return null;
 
-  parsed.sort(
-    (a, b) => Math.abs(a.width - 300) - Math.abs(b.width - 300)
-  );
+  parsed.sort((a, b) => Math.abs(a.width - 300) - Math.abs(b.width - 300));
   return parsed[0]?.url ?? null;
 }

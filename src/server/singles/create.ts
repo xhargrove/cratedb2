@@ -2,7 +2,10 @@ import { prisma } from '@/db/client';
 
 import type { SingleWriteInput } from '@/server/singles/types';
 
-export async function createSingleForOwner(ownerId: string, data: SingleWriteInput) {
+export async function createSingleForOwner(
+  ownerId: string,
+  data: SingleWriteInput
+) {
   return prisma.collectionSingle.create({
     data: {
       ownerId,

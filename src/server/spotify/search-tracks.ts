@@ -34,10 +34,7 @@ export async function searchSpotifyTracks(args: {
   const url = new URL(SEARCH_URL);
   url.searchParams.set('q', q);
   url.searchParams.set('type', 'track');
-  url.searchParams.set(
-    'limit',
-    String(SPOTIFY_TRACK_SEARCH_MAX_RESULTS)
-  );
+  url.searchParams.set('limit', String(SPOTIFY_TRACK_SEARCH_MAX_RESULTS));
 
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), 12_000);

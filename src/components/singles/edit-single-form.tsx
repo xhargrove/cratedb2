@@ -30,7 +30,10 @@ export function EditSingleForm({ single }: { single: SingleRow }) {
   );
 
   return (
-    <form action={formAction} className="grid gap-3 rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+    <form
+      action={formAction}
+      className="grid gap-3 rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900"
+    >
       <input type="hidden" name="singleId" value={single.id} />
       <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
         Edit single
