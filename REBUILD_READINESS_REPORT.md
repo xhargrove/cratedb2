@@ -76,7 +76,10 @@ _(Same checks as `npm run check`; run after edits and before release.)_
 | `NODE_ENV`                                                            | Set by tooling                      | Cookie `secure`, Prisma log level, logger                                                                |
 | `LOG_LEVEL`                                                           | Optional                            | `src/lib/logger.ts`                                                                                      |
 | `PRISMA_QUERY_LOG`                                                    | Optional (`true` = SQL in dev logs) | `src/db/client.ts`                                                                                       |
-| `ARTWORK_STORAGE_ROOT`                                                | Optional                            | `src/server/storage/local-artwork-store.ts`                                                              |
+| `ARTWORK_STORAGE_BACKEND`                                             | Optional (`local` default)          | `src/lib/env.ts`, `src/server/storage/artwork-store.ts`                                                  |
+| `S3_BUCKET`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` | Required when backend=`s3`          | `src/lib/env.ts`, `src/server/storage/object-artwork-store.ts`                                           |
+| `S3_ENDPOINT`, `S3_FORCE_PATH_STYLE`                                  | Optional                            | `src/server/storage/object-artwork-store.ts`                                                             |
+| `ARTWORK_STORAGE_ROOT`                                                | Optional (`local` backend only)     | `src/server/storage/local-artwork-store.ts`                                                              |
 | `ENRICHMENT_ENABLED`, `MUSICBRAINZ_CONTACT`, `MUSICBRAINZ_USER_AGENT` | Enrichment optional                 | `src/server/enrichment/config.ts` — **fail closed** unless `ENRICHMENT_ENABLED=true` **and** contact set |
 | `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`                          | Spotify optional                    | `src/server/spotify/config.ts` — **both** required together or integration off                           |
 | `FIGMA_ACCESS_TOKEN`                                                  | Optional (CLI only)                 | Documented in `.env.example`; **not** read by Next.js runtime                                            |
@@ -87,10 +90,11 @@ Canonical comments: **`.env.example`**.
 
 ## 5. Artwork storage — deployment reality
 
-- **Implementation:** Local filesystem only. `ensureParentDir` + `writeFile` on upload; `readArtworkFile` on GET; missing file → **404**.
-- **Default path:** `path.join(process.cwd(), 'storage', 'artwork')` — **`cwd` is whatever the host sets**, not necessarily your repo root unless the process starts there.
-- **Production:** Persistent disk or mount **required** if artwork must survive redeploys. Ephemeral containers **will** lose files; DB keys may remain → **404** on image URLs until re-upload or cleanup.
-- **Second storage backend:** **Not** shipped; object storage remains **out of scope** until a future project explicitly adds it.
+- **Canonical interface:** `ArtworkStore` abstraction (`src/server/storage/types.ts`) used by actions, delete services, and API routes.
+- **Primary backend:** S3-compatible object storage adapter (`src/server/storage/object-artwork-store.ts`).
+- **Fallback backend:** local adapter exists for dev/migration use behind same interface (`ARTWORK_STORAGE_BACKEND=local`).
+- **Access control unchanged:** owner always allowed; non-owner artwork bytes only when `collectionPublic` allows.
+- **Migration path:** one-time script `npm run migrate:artwork:to-object` with `--dry-run` and idempotent skip behavior.
 
 ---
 
@@ -124,10 +128,10 @@ Residual: operational secrets handling, HTTPS in production, MusicBrainz etiquet
 
 | Ready within scope                                                    | Requires operator configuration                                                | Intentionally deferred                                                      |
 | --------------------------------------------------------------------- | ------------------------------------------------------------------------------ | --------------------------------------------------------------------------- |
-| Auth, collection, singles, wantlist, follows, stats, profile settings | Postgres URL, **`npm run db:deploy`**, HTTPS host, persistent disk for artwork | Object storage, public singles grid on `/u/[id]`, Discogs, import/export UX |
-| Optional Spotify / enrichment                                         | Env toggles                                                                    | Multi-region HA, CDN for artwork                                            |
+| Auth, collection, singles, wantlist, follows, stats, profile settings | Postgres URL, **`npm run db:deploy`**, HTTPS host, S3-compatible artwork envs | Public singles grid on `/u/[id]`, Discogs, import/export UX                 |
+| Optional Spotify / enrichment                                         | Env toggles                                                                    | Multi-region HA, advanced CDN edge image pipeline                            |
 
-**Bottom line:** Suitable for production **only** when operators accept **filesystem artwork caveats**, run **migrations**, set **`DATABASE_URL`**, and use **HTTPS** for sessions. Not a turnkey SaaS offering for arbitrary serverless hosts without storage planning.
+**Bottom line:** Production-suitable for artwork when operators configure S3-compatible storage env correctly, run migrations, and use HTTPS. Local backend remains for development and migration support.
 
 ---
 

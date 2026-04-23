@@ -10,6 +10,13 @@ vi.mock('@/db/client', () => ({
   },
 }));
 
+vi.mock('@/lib/logger', () => ({
+  logger: {
+    warn: vi.fn(),
+    error: vi.fn(),
+  },
+}));
+
 import { prisma } from '@/db/client';
 import {
   createSession,
@@ -72,6 +79,30 @@ describe('session-service', () => {
     expect(prisma.session.delete).toHaveBeenCalledWith({
       where: { id: 'sess1' },
     });
+  });
+
+  it('retries once on transient connection failure', async () => {
+    const expiresAt = new Date(Date.now() + 86_400_000);
+    vi.mocked(prisma.session.findUnique)
+      .mockRejectedValueOnce(new Error('Server has closed the connection.'))
+      .mockResolvedValueOnce({
+        id: 'sess1',
+        userId: 'u1',
+        expiresAt,
+        createdAt: new Date(),
+        user: {
+          id: 'u1',
+          email: 'x@y.com',
+          passwordHash: 'hash',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          profile: null,
+        },
+      } as never);
+
+    const user = await getUserForSessionToken('sess1');
+    expect(user?.id).toBe('u1');
+    expect(prisma.session.findUnique).toHaveBeenCalledTimes(2);
   });
 
   it('createSession persists session', async () => {

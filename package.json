@@ -12,6 +12,10 @@
     "format:check": "prettier --check .",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:install": "playwright install --with-deps",
+    "migrate:artwork:to-object": "tsx scripts/migrate-artwork-to-object-storage.ts",
     "check": "npm run format:check && npm run lint && npm run typecheck && npm run test && npm run build",
     "postinstall": "prisma generate",
     "db:generate": "prisma generate",
@@ -25,13 +29,16 @@
     "figma:connect:unpublish": "figma connect unpublish"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.924.0",
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
     "argon2": "^0.44.0",
     "dotenv": "^17.4.2",
     "next": "^15.5.15",
+    "pdf-lib": "^1.17.1",
     "pg": "^8.20.0",
     "pino": "^10.3.1",
+    "qrcode": "^1.5.4",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "zod": "^4.3.6"
@@ -39,9 +46,11 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@figma/code-connect": "^1.4.3",
+    "@playwright/test": "^1.56.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/pg": "^8.20.0",
+    "@types/qrcode": "^1.5.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
@@ -50,6 +59,7 @@
     "prettier": "^3.8.3",
     "prisma": "^7.8.0",
     "tailwindcss": "^4",
+    "tsx": "^4.20.6",
     "typescript": "^5",
     "vitest": "^4.1.5"
   }

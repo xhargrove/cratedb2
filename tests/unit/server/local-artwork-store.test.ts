@@ -5,13 +5,15 @@ import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
-  profileImageRelativeKey,
   resolveArtworkAbsolutePath,
-  singleArtworkRelativeKey,
   writeArtworkFile,
   readArtworkFile,
   deleteArtworkFile,
 } from '@/server/storage/local-artwork-store';
+import {
+  profileImageRelativeKey,
+  singleArtworkRelativeKey,
+} from '@/server/storage/artwork-keys';
 
 describe('local-artwork-store', () => {
   let dir: string;
@@ -30,7 +32,7 @@ describe('local-artwork-store', () => {
 
   it('rejects path traversal in relative keys', () => {
     expect(() => resolveArtworkAbsolutePath('../outside/evil.jpg')).toThrow(
-      /Invalid artwork path/
+      /Invalid artwork key/
     );
   });
 
@@ -41,7 +43,9 @@ describe('local-artwork-store', () => {
   });
 
   it('builds profile image key with stable filename', () => {
-    expect(profileImageRelativeKey('user1', 'image/png')).toBe('user1/profile.png');
+    expect(profileImageRelativeKey('user1', 'image/png')).toBe(
+      'user1/profile.png'
+    );
   });
 
   it('writes and reads binary bytes', async () => {

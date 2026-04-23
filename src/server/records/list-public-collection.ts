@@ -9,6 +9,7 @@ export type PublicCollectionRecordRow = {
   title: string;
   year: number | null;
   genre: string | null;
+  quantity: number;
   artworkKey: string | null;
   artworkUpdatedAt: Date | null;
 };
@@ -34,6 +35,7 @@ export async function listPublicCollectionForUser(
       title: true,
       year: true,
       genre: true,
+      quantity: true,
       artworkKey: true,
       artworkUpdatedAt: true,
     },

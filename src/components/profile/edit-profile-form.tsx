@@ -46,7 +46,6 @@ export function EditProfileForm({
   return (
     <form
       action={formAction}
-      encType="multipart/form-data"
       className="grid gap-4 rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900"
     >
       <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
@@ -168,8 +167,9 @@ export function EditProfileForm({
         <span>
           <span className="font-medium">Show my collection publicly</span>
           <span className="mt-1 block text-xs font-normal text-zinc-600 dark:text-zinc-400">
-            When enabled, visitors can browse your albums and singles (artwork
-            rules still apply). Turn off to hide catalog from your public page.
+            When enabled, visitors can browse your albums, 45s, and 12-inch
+            singles (artwork rules still apply). Turn off to hide catalog from
+            your public page.
           </span>
         </span>
       </label>

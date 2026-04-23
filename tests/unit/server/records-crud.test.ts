@@ -1,7 +1,7 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 
 const artworkStorageMocks = vi.hoisted(() => ({
-  deleteArtworkFile: vi.fn().mockResolvedValue(undefined),
+  deleteArtworkObject: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock('@/db/client', () => ({
@@ -19,14 +19,14 @@ vi.mock('@/db/client', () => ({
   },
 }));
 
-vi.mock('@/server/storage/local-artwork-store', async (importOriginal) => {
+vi.mock('@/server/storage/artwork-store', async (importOriginal) => {
   const mod =
     await importOriginal<
-      typeof import('@/server/storage/local-artwork-store')
+      typeof import('@/server/storage/artwork-store')
     >();
   return {
     ...mod,
-    deleteArtworkFile: artworkStorageMocks.deleteArtworkFile,
+    deleteArtworkObject: artworkStorageMocks.deleteArtworkObject,
   };
 });
 
@@ -75,9 +75,18 @@ describe('updateRecordForOwner', () => {
       artist: 'X',
       title: 'Y',
       year: undefined as number | undefined,
+      quantity: 1,
       genre: undefined as string | undefined,
-      storageLocation: undefined as string | undefined,
+      storageKind: 'NONE' as const,
+      shelfRow: null as number | null,
+      shelfColumn: null as number | null,
+      crateNumber: null as number | null,
+      boxNumber: null as number | null,
+      boxCustomLabel: null as string | null,
+      storageLocation: null as string | null,
       notes: undefined as string | undefined,
+      spotifyAlbumId: undefined as string | undefined,
+      containerId: null as string | null,
     };
     const ok = await updateRecordForOwner('rid', 'oid', payload);
     expect(ok).toBe(true);
@@ -88,9 +97,17 @@ describe('updateRecordForOwner', () => {
         title: 'Y',
         year: null,
         genre: null,
+        storageKind: 'NONE',
+        shelfRow: null,
+        shelfColumn: null,
+        crateNumber: null,
+        boxNumber: null,
+        boxCustomLabel: null,
         storageLocation: null,
         notes: null,
         spotifyAlbumId: null,
+        quantity: 1,
+        containerId: null,
       },
     });
   });
@@ -103,9 +120,18 @@ describe('updateRecordForOwner', () => {
       artist: 'X',
       title: 'Y',
       year: undefined,
+      quantity: 1,
       genre: undefined,
-      storageLocation: undefined,
+      storageKind: 'NONE',
+      shelfRow: null,
+      shelfColumn: null,
+      crateNumber: null,
+      boxNumber: null,
+      boxCustomLabel: null,
+      storageLocation: null,
       notes: undefined,
+      spotifyAlbumId: undefined,
+      containerId: null,
     });
     expect(ok).toBe(false);
   });
@@ -115,7 +141,7 @@ describe('deleteRecordForOwner', () => {
   beforeEach(() => {
     vi.mocked(prisma.collectionRecord.deleteMany).mockReset();
     vi.mocked(prisma.collectionRecord.findFirst).mockReset();
-    artworkStorageMocks.deleteArtworkFile.mockClear();
+    artworkStorageMocks.deleteArtworkObject.mockClear();
   });
 
   it('deletes only compound id + ownerId', async () => {
@@ -134,7 +160,7 @@ describe('deleteRecordForOwner', () => {
     expect(prisma.collectionRecord.deleteMany).toHaveBeenCalledWith({
       where: { id: 'rid', ownerId: 'oid' },
     });
-    expect(artworkStorageMocks.deleteArtworkFile).not.toHaveBeenCalled();
+    expect(artworkStorageMocks.deleteArtworkObject).not.toHaveBeenCalled();
   });
 
   it('returns false when delete touches no row', async () => {
@@ -146,7 +172,7 @@ describe('deleteRecordForOwner', () => {
     });
     const ok = await deleteRecordForOwner('rid', 'wrong');
     expect(ok).toBe(false);
-    expect(artworkStorageMocks.deleteArtworkFile).not.toHaveBeenCalled();
+    expect(artworkStorageMocks.deleteArtworkObject).not.toHaveBeenCalled();
   });
 
   it('deletes artwork file after row removal when stored', async () => {
@@ -158,7 +184,7 @@ describe('deleteRecordForOwner', () => {
     });
     const ok = await deleteRecordForOwner('rid', 'oid');
     expect(ok).toBe(true);
-    expect(artworkStorageMocks.deleteArtworkFile).toHaveBeenCalledWith(
+    expect(artworkStorageMocks.deleteArtworkObject).toHaveBeenCalledWith(
       'oid/rid.jpg'
     );
   });
@@ -187,9 +213,18 @@ describe('createRecordForOwner', () => {
       artist: 'A',
       title: 'B',
       year: undefined,
+      quantity: 1,
       genre: undefined,
-      storageLocation: undefined,
+      storageKind: 'NONE',
+      shelfRow: null,
+      shelfColumn: null,
+      crateNumber: null,
+      boxNumber: null,
+      boxCustomLabel: null,
+      storageLocation: null,
       notes: undefined,
+      spotifyAlbumId: undefined,
+      containerId: null,
     });
 
     expect(prisma.collectionRecord.create).toHaveBeenCalledWith({
@@ -199,9 +234,17 @@ describe('createRecordForOwner', () => {
         title: 'B',
         year: null,
         genre: null,
+        storageKind: 'NONE',
+        shelfRow: null,
+        shelfColumn: null,
+        crateNumber: null,
+        boxNumber: null,
+        boxCustomLabel: null,
         storageLocation: null,
         notes: null,
         spotifyAlbumId: null,
+        quantity: 1,
+        containerId: null,
       },
     });
   });

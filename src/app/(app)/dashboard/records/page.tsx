@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { CollectionEmpty } from '@/components/collection/collection-empty';
+import { RecordsExportLinks } from '@/components/collection/records-export-links';
 import { CollectionToolbar } from '@/components/collection/collection-toolbar';
 import { RecordGrid } from '@/components/collection/record-grid';
 import { RecordList } from '@/components/collection/record-list';
@@ -77,6 +78,7 @@ function toDisplayRows(
     year: number | null;
     genre: string | null;
     storageLocation: string | null;
+    quantity: number;
     artworkKey: string | null;
     artworkUpdatedAt: Date | null;
   }[]
@@ -88,6 +90,7 @@ function toDisplayRows(
     year: r.year,
     genre: r.genre,
     storageLocation: r.storageLocation,
+    quantity: r.quantity,
     artworkKey: r.artworkKey,
     artworkUpdatedAt: r.artworkUpdatedAt,
   }));
@@ -163,12 +166,15 @@ export default async function RecordsListPage({
             </p>
           ) : null}
         </div>
-        <Link
-          href="/dashboard/records/new"
-          className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
-        >
-          Add record
-        </Link>
+        <div className="flex flex-col items-end gap-3 sm:flex-row sm:items-center">
+          {totalOwned > 0 ? <RecordsExportLinks /> : null}
+          <Link
+            href="/dashboard/records/new"
+            className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+          >
+            Add record
+          </Link>
+        </div>
       </header>
 
       {totalOwned > 0 ? (

@@ -6,6 +6,8 @@ export type RecordDisplayRow = {
   year: number | null;
   genre: string | null;
   storageLocation: string | null;
+  /** Physical copies of this release (same row). */
+  quantity: number;
   artworkKey: string | null;
   artworkUpdatedAt: Date | null;
 };

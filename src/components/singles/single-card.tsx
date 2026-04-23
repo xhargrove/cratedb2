@@ -17,12 +17,19 @@ export function SingleCard({ single }: { single: SingleDisplayRow }) {
       href={`/dashboard/singles/${single.id}`}
       className="flex flex-col overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm transition hover:border-zinc-300 hover:shadow dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700"
     >
-      <RecordArtworkImage
-        src={artworkSrc}
-        alt=""
-        className="aspect-square w-full"
-        imgClassName="h-full w-full object-cover"
-      />
+      <div className="relative">
+        <RecordArtworkImage
+          src={artworkSrc}
+          alt=""
+          className="aspect-square w-full"
+          imgClassName="h-full w-full object-cover"
+        />
+        {single.quantity > 1 ? (
+          <span className="absolute right-2 top-2 rounded-full bg-black/70 px-2 py-0.5 text-xs font-semibold tabular-nums text-white">
+            ×{single.quantity}
+          </span>
+        ) : null}
+      </div>
       <div className="flex flex-col p-4">
         <span className="font-semibold text-zinc-900 dark:text-zinc-100">
           {single.artist}
@@ -36,6 +43,12 @@ export function SingleCard({ single }: { single: SingleDisplayRow }) {
           </span>
         ) : null}
         <dl className="mt-3 space-y-1 text-xs text-zinc-500 dark:text-zinc-400">
+          {single.quantity > 1 ? (
+            <div>
+              <dt className="inline font-medium">Copies</dt>{' '}
+              <dd className="inline tabular-nums">{single.quantity}</dd>
+            </div>
+          ) : null}
           {single.year != null ? (
             <div>
               <dt className="inline font-medium">Year</dt>{' '}

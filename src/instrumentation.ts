@@ -11,6 +11,11 @@ export async function register() {
   if (process.env.NEXT_RUNTIME !== 'nodejs') return;
 
   if (globalThis.__cratedbInstrumentationRegistered) return;
+
+  const { getServerEnv } = await import('@/lib/env');
+  // Fail fast during Node runtime startup if required env is missing/invalid.
+  getServerEnv();
+
   globalThis.__cratedbInstrumentationRegistered = true;
 
   const { logger } = await import('@/lib/logger');

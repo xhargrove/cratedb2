@@ -23,6 +23,29 @@ export type OwnerInsights = {
   artists: RankedRowWithBar[];
   /** Release years present on records; excludes unknown/null years. */
   topReleaseYears: RankedRowWithBar[];
+  /** Singles (45s): listing rows in `collection_singles`. */
+  singleCount: number;
+  /** Sum of `quantity` across singles (physical discs). */
+  singlesTotalCopies: number;
+  distinctArtistsInSingles: number;
+  singlesArtwork: {
+    withArtwork: number;
+    percentWithArtwork: number | null;
+  };
+  singlesGenres: RankedRowWithBar[];
+  singlesArtists: RankedRowWithBar[];
+  singlesTopReleaseYears: RankedRowWithBar[];
+  /** 12-inch singles (`collection_twelve_inch_singles`). */
+  twelveInchCount: number;
+  twelveInchTotalCopies: number;
+  distinctArtistsInTwelveInch: number;
+  twelveInchArtwork: {
+    withArtwork: number;
+    percentWithArtwork: number | null;
+  };
+  twelveInchGenres: RankedRowWithBar[];
+  twelveInchArtists: RankedRowWithBar[];
+  twelveInchTopReleaseYears: RankedRowWithBar[];
   follows: {
     followers: number;
     following: number;

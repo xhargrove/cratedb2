@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
 import { prisma } from '@/db/client';
-import { readArtworkFile } from '@/server/storage/local-artwork-store';
+import { readArtworkObject } from '@/server/storage/artwork-store';
 
 /**
  * Public profile photo — readable without auth (same idea as typical avatar URLs).
@@ -26,8 +26,11 @@ export async function GET(
   }
 
   try {
-    const buf = await readArtworkFile(profile.profileImageKey);
-    return new NextResponse(new Uint8Array(buf), {
+    const object = await readArtworkObject(profile.profileImageKey);
+    if (!object) {
+      return new NextResponse('Not found', { status: 404 });
+    }
+    return new NextResponse(new Uint8Array(object.buffer), {
       status: 200,
       headers: {
         'Content-Type': profile.profileImageMimeType,

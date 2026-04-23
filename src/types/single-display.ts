@@ -7,6 +7,8 @@ export type SingleDisplayRow = {
   year: number | null;
   genre: string | null;
   storageLocation: string | null;
+  /** Physical copies of this single (same row). */
+  quantity: number;
   artworkKey: string | null;
   artworkUpdatedAt: Date | null;
 };

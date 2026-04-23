@@ -10,9 +10,16 @@
  */
 export const COLLECTION_LIST_MAX = 500;
 
+/** Owner export download (albums or singles) — hard cap per request. */
+export const OWNER_EXPORT_ROW_MAX = 10_000;
+
 /** Max length for `q` after trim (`parseCollectionSearchParams`). */
 export const MAX_SEARCH_Q_LENGTH = 200;
 
-/** Align with `recordWriteFormSchema` for URL param safety. */
+/** Align with record / single form string field max lengths for URL param safety. */
 export const MAX_GENRE_URL_LENGTH = 200;
 export const MAX_STORAGE_URL_LENGTH = 500;
+
+/** Physical storage containers (shelf / box / crate). */
+export const CONTAINER_NAME_MAX = 120;
+export const CONTAINER_LOCATION_NOTE_MAX = 500;

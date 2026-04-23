@@ -13,7 +13,7 @@ This repository is a **PostgreSQL-backed** rebuild (legacy Streamlit + JSON live
 | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Auth**       | Email/password, Argon2id hashing, opaque session id in httpOnly cookie, server-side session rows                                                                                                                                                                                                                                               |
 | **Collection** | CRUD for owned records (`artist`, `title`, optional `year`, `genre`, storage, notes); search, genre/storage facets, sort; list/grid; **hard cap** 500 rows per request with UI notice                                                                                                                                                          |
-| **Artwork**    | Optional images for **records and singles**; stored **on local disk** under one configurable root; served via **`GET /api/records/[id]/artwork`** and **`GET /api/singles/[id]/artwork`** — **owners** always; **other viewers** only if that owner’s **`collectionPublic`** is true (otherwise **403**); not exposed as files under `/public` |
+| **Artwork**    | Optional images for **records and singles**; stored in a **canonical artwork store** (S3-compatible object storage in production, local backend for dev/migration); served via **`GET /api/records/[id]/artwork`** and **`GET /api/singles/[id]/artwork`** — **owners** always; **other viewers** only if that owner’s **`collectionPublic`** is true (otherwise **403**); not exposed as files under `/public` |
 | **Wantlist**   | Separate list with dedupe key (artist/title/year rules); conflicts with owned records rejected server-side                                                                                                                                                                                                                                     |
 | **Social**     | Follow/unfollow users; follower counts on dashboard insights                                                                                                                                                                                                                                                                                   |
 | **Public**     | **`/u/[id]`** public profile page; **`Profile.collectionPublic`** hides collection rows when false (email never shown publicly)                                                                                                                                                                                                                |
@@ -21,7 +21,7 @@ This repository is a **PostgreSQL-backed** rebuild (legacy Streamlit + JSON live
 | **Spotify**    | **Optional** album search on records and track search on singles (client credentials); optional **`spotifyAlbumId`** / **`spotifyTrackId`** — off unless both `SPOTIFY_*` vars are set                                                                                                                                                         |
 | **Enrichment** | **Optional** MusicBrainz lookup on record **edit** — off unless env enables it                                                                                                                                                                                                                                                                 |
 
-**Intentionally out of scope for this codebase:** marketplace, messaging, activity feed, “login with Spotify” OAuth for users, Spotify audio-features / discovery APIs beyond album search, CSV/JSON export UX, automated legacy JSON→Postgres import scripts, hosted object storage for artwork by default.
+**Intentionally out of scope for this codebase:** marketplace, messaging, activity feed, “login with Spotify” OAuth for users, Spotify audio-features / discovery APIs beyond album search, CSV/JSON export UX, automated legacy JSON→Postgres import scripts.
 
 ---
 
@@ -52,6 +52,8 @@ npm install
 npm run db:migrate
 npm run dev
 ```
+
+On Node startup, Cratedb validates required server env (currently `DATABASE_URL`) via `src/instrumentation.ts` + `getServerEnv()`. Missing/invalid required env fails early with a clear error before request handling.
 
 Open [http://localhost:3000](http://localhost:3000).
 
@@ -111,6 +113,8 @@ Copy **`.env.example`** to `.env` or `.env.local`. Next.js loads `.env.local` wi
 | ------------------ | ----------------------------------------------------------- |
 | **`DATABASE_URL`** | PostgreSQL URL (required whenever the app talks to the DB). |
 
+`DATABASE_URL` is fail-fast validated at Node runtime registration. Deployments that omit it will fail startup.
+
 **Postgres SSL in development:** If the terminal or browser console shows a **Node `pg` warning** about `sslmode` (`require`, `prefer`, etc.) and future driver behavior, it comes from parsing your URL — not a React bug. Use an **explicit `sslmode`** on the query string that your host recommends (often **`verify-full`** for managed Postgres). See comments in `.env.example`.
 
 ### Optional — runtime / ops
@@ -121,15 +125,31 @@ Copy **`.env.example`** to `.env` or `.env.local`. Next.js loads `.env.local` wi
 | **`NODE_ENV`**         | Set by tooling (`development` / `production` / `test`). Used for cookie `secure`, Prisma logs, logger defaults.                       |
 | **`PRISMA_QUERY_LOG`** | Set to **`true`** to log SQL in development. **Off by default** so user-influenced query fragments are not printed unless you opt in. |
 
-### Optional — artwork (local filesystem)
+### Artwork storage (S3-compatible object storage)
 
-| Variable                   | Behavior                                                                                                                                                                                                                                                                                       |
-| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **`ARTWORK_STORAGE_ROOT`** | Absolute directory for **all** cover images (albums **and** singles). **Default:** `<cwd>/storage/artwork` (`cwd` is the Node process working directory). DB stores relative keys only (`{ownerId}/{recordId}.{ext}` or `{ownerId}/singles/{singleId}.{ext}`) — blobs are **not** in Postgres. |
+| Variable                       | Behavior                                                                                                                                                                                           |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`ARTWORK_STORAGE_BACKEND`**  | `local` or `s3`. Default: `local` for development convenience. Use `s3` in production.                                                                                                           |
+| **`S3_BUCKET`**                | Required when backend is `s3`.                                                                                                                                                                     |
+| **`S3_REGION`**                | Required when backend is `s3`.                                                                                                                                                                     |
+| **`S3_ACCESS_KEY_ID`**         | Required when backend is `s3`.                                                                                                                                                                     |
+| **`S3_SECRET_ACCESS_KEY`**     | Required when backend is `s3`.                                                                                                                                                                     |
+| **`S3_ENDPOINT`**              | Optional custom endpoint for S3-compatible providers (R2, MinIO, etc).                                                                                                                            |
+| **`S3_FORCE_PATH_STYLE`**      | Optional `true`/`false` (useful for some S3-compatible endpoints).                                                                                                                                |
+| **`ARTWORK_STORAGE_ROOT`**     | Local backend only. Absolute directory for cover images when `ARTWORK_STORAGE_BACKEND=local`.                                                                                                    |
 
-**Privacy / behaviour:** Artwork is not served from `/public`. The artwork API routes allow the **owner** always; **others** receive bytes only when that owner’s collection is **public** (`Profile.collectionPublic`); otherwise **403**. When public, responses may use `Cache-Control: public` (see route handlers).
+Artwork bytes are stored in object storage (or local fallback) while DB keeps relative keys (`artworkKey`) and metadata (`artworkMimeType`, `artworkUpdatedAt`). Bytes are never stored in Postgres.
 
-**Deployment caveat:** On **ephemeral** filesystems (many PaaS / serverless-style containers), local disk is wiped on redeploy unless you attach a **persistent volume** or later adopt object storage. Without persistence, DB rows may still point at keys whose files are **gone** — GET returns **404**. This codebase does **not** ship object storage; operators must plan disk or accept re-upload after redeploy.
+**Privacy / behavior:** Artwork is not served from `/public`. API routes always enforce owner/public-profile checks before returning bytes. Non-owners only receive artwork when that owner's collection visibility allows it.
+
+**Migration:** Existing local artwork keys can be uploaded to object storage via:
+
+```bash
+npm run migrate:artwork:to-object -- --dry-run
+npm run migrate:artwork:to-object
+```
+
+Add `--force` to re-upload even when the object already exists.
 
 ### Optional — metadata enrichment (MusicBrainz)
 
@@ -184,3 +204,12 @@ npm run check
 ```
 
 Runs Prettier check, ESLint, TypeScript, Vitest, and production build.
+
+For browser-path verification, run Playwright E2E:
+
+```bash
+npm run test:e2e:install
+npm run test:e2e
+```
+
+If `E2E_BASE_URL` is unset, Playwright starts `npm run dev` automatically.

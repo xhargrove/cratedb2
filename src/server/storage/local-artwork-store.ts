@@ -1,10 +1,9 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 
-import {
-  extensionForMime,
-  type AllowedArtworkMimeType,
-} from '@/lib/validations/artwork';
+import type { AllowedArtworkMimeType } from '@/lib/validations/artwork';
+import { assertValidArtworkKey } from '@/server/storage/artwork-keys';
+import type { ArtworkStore } from '@/server/storage/types';
 
 /**
  * Local filesystem artwork store. Paths in the DB are relative keys so a
@@ -24,36 +23,8 @@ export function getArtworkStorageRoot(): string {
   return path.join(process.cwd(), 'storage', 'artwork');
 }
 
-/** Relative key persisted in DB — never absolute paths. */
-export function artworkRelativeKey(
-  ownerId: string,
-  recordId: string,
-  mimeType: AllowedArtworkMimeType
-): string {
-  const ext = extensionForMime(mimeType);
-  return `${ownerId}/${recordId}.${ext}`;
-}
-
-/** Avatar / profile photo — one file per user, stable basename. */
-export function profileImageRelativeKey(
-  userId: string,
-  mimeType: AllowedArtworkMimeType
-): string {
-  const ext = extensionForMime(mimeType);
-  return `${userId}/profile.${ext}`;
-}
-
-/** Key for 45 singles — isolated under `singles/` per owner to avoid clashes with album artwork keys. */
-export function singleArtworkRelativeKey(
-  ownerId: string,
-  singleId: string,
-  mimeType: AllowedArtworkMimeType
-): string {
-  const ext = extensionForMime(mimeType);
-  return `${ownerId}/singles/${singleId}.${ext}`;
-}
-
 export function resolveArtworkAbsolutePath(relativeKey: string): string {
+  assertValidArtworkKey(relativeKey);
   const root = path.resolve(getArtworkStorageRoot());
   const resolved = path.resolve(root, relativeKey);
   const rel = path.relative(root, resolved);
@@ -99,4 +70,30 @@ export async function artworkFileExists(relativeKey: string): Promise<boolean> {
 export async function readArtworkFile(relativeKey: string): Promise<Buffer> {
   const abs = resolveArtworkAbsolutePath(relativeKey);
   return fs.readFile(abs);
+}
+
+export function createLocalArtworkStore(): ArtworkStore {
+  return {
+    async putObject(
+      key: string,
+      buffer: Buffer,
+      mimeType: AllowedArtworkMimeType
+    ) {
+      void mimeType;
+      await writeArtworkFile(key, buffer);
+    },
+    async getObject(key: string) {
+      try {
+        return { buffer: await readArtworkFile(key), mimeType: null };
+      } catch {
+        return null;
+      }
+    },
+    async deleteObject(key: string) {
+      await deleteArtworkFile(key);
+    },
+    async objectExists(key: string) {
+      return artworkFileExists(key);
+    },
+  };
 }

@@ -8,10 +8,12 @@ import { parseProfileUpdateForm } from '@/lib/validations/profile';
 import { logger } from '@/lib/logger';
 import { requireUser } from '@/server/auth/require-user';
 import {
-  deleteArtworkFile,
   profileImageRelativeKey,
-  writeArtworkFile,
-} from '@/server/storage/local-artwork-store';
+} from '@/server/storage/artwork-keys';
+import {
+  deleteArtworkObject,
+  writeArtworkObject,
+} from '@/server/storage/artwork-store';
 import {
   updateProfileForUser,
   type ProfileImageOp,
@@ -42,7 +44,7 @@ export async function updateProfileAction(
   try {
     if (removeProfileImage) {
       if (current?.profileImageKey) {
-        await deleteArtworkFile(current.profileImageKey);
+        await deleteArtworkObject(current.profileImageKey);
       }
       imageOp = { kind: 'clear' };
     } else {
@@ -56,9 +58,9 @@ export async function updateProfileAction(
       if (uploaded.kind === 'present') {
         const key = profileImageRelativeKey(user.id, uploaded.mimeType);
         if (current?.profileImageKey && current.profileImageKey !== key) {
-          await deleteArtworkFile(current.profileImageKey);
+          await deleteArtworkObject(current.profileImageKey);
         }
-        await writeArtworkFile(key, uploaded.buffer);
+        await writeArtworkObject(key, uploaded.buffer, uploaded.mimeType);
         imageOp = {
           kind: 'replace',
           key,

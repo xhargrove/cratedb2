@@ -12,10 +12,12 @@ import {
 import { parseSingleForm, parseSingleId } from '@/lib/validations/single';
 import { requireUser } from '@/server/auth/require-user';
 import {
-  deleteArtworkFile,
   singleArtworkRelativeKey,
-  writeArtworkFile,
-} from '@/server/storage/local-artwork-store';
+} from '@/server/storage/artwork-keys';
+import {
+  deleteArtworkObject,
+  writeArtworkObject,
+} from '@/server/storage/artwork-store';
 import { getSpotifyIntegrationConfig } from '@/server/spotify/config';
 import { fetchSpotifyTrackCoverBuffer } from '@/server/spotify/fetch-album-cover';
 import { createSingleForOwner } from '@/server/singles/create';
@@ -51,7 +53,7 @@ async function persistArtworkForSingle(args: {
     args.pending.mimeType
   );
 
-  await writeArtworkFile(key, args.pending.buffer);
+  await writeArtworkObject(key, args.pending.buffer, args.pending.mimeType);
 
   await prisma.collectionSingle.updateMany({
     where: { id: args.singleId, ownerId: args.ownerId },
@@ -63,7 +65,7 @@ async function persistArtworkForSingle(args: {
   });
 
   if (args.prevKey && args.prevKey !== key) {
-    await deleteArtworkFile(args.prevKey);
+    await deleteArtworkObject(args.prevKey);
   }
 
   return { ok: true as const };
@@ -124,7 +126,7 @@ export async function createSingleAction(
           cover.mimeType
         );
         try {
-          await writeArtworkFile(key, cover.buffer);
+          await writeArtworkObject(key, cover.buffer, cover.mimeType);
           await prisma.collectionSingle.update({
             where: { id: single.id },
             data: {
@@ -138,7 +140,7 @@ export async function createSingleAction(
             { err: e, singleId: single.id },
             'createSingle Spotify sleeve art failed — single saved without artwork'
           );
-          await deleteArtworkFile(key).catch(() => {});
+          await deleteArtworkObject(key).catch(() => {});
         }
       }
     }
@@ -196,7 +198,7 @@ export async function updateSingleAction(
           artworkUpdatedAt: null,
         },
       });
-      if (prevKey) await deleteArtworkFile(prevKey);
+      if (prevKey) await deleteArtworkObject(prevKey);
     } else if (artworkParsed.kind === 'present') {
       await persistArtworkForSingle({
         pending: artworkParsed,

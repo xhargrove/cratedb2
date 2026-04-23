@@ -81,6 +81,17 @@ export default async function DashboardPage({
           </span>
         </Link>
         <Link
+          href="/dashboard/twelve-inch"
+          className="group rounded-2xl border border-border bg-surface p-5 shadow-sm ring-1 ring-accent/10 transition hover:border-accent/35 hover:ring-accent/25"
+        >
+          <span className="block text-base font-semibold text-foreground">
+            12-inch singles
+          </span>
+          <span className="mt-1 block text-sm text-muted">
+            Maxis and extended mixes on 12&quot;.
+          </span>
+        </Link>
+        <Link
           href="/dashboard/records/new"
           className="group rounded-2xl border border-border bg-surface p-5 shadow-sm ring-1 ring-accent/10 transition hover:border-accent/35 hover:ring-accent/25"
         >

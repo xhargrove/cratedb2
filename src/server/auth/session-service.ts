@@ -1,5 +1,11 @@
 import { prisma } from '@/db/client';
+import type { Prisma } from '@/generated/prisma/client';
+import { logger } from '@/lib/logger';
 import { SESSION_MAX_DAYS } from '@/server/auth/constants';
+
+type SessionWithUser = Prisma.SessionGetPayload<{
+  include: { user: { include: { profile: true } } };
+}>;
 
 export async function createSession(userId: string): Promise<string> {
   const expiresAt = new Date(
@@ -28,14 +34,45 @@ export async function destroySession(sessionId: string): Promise<void> {
 export async function getUserForSessionToken(sessionId: string | undefined) {
   if (!sessionId) return null;
 
-  const session = await prisma.session.findUnique({
-    where: { id: sessionId },
-    include: {
-      user: {
-        include: { profile: true },
-      },
-    },
-  });
+  let session: SessionWithUser | null = null;
+
+  for (let attempt = 1; attempt <= 2; attempt += 1) {
+    try {
+      session = await prisma.session.findUnique({
+        where: { id: sessionId },
+        include: {
+          user: {
+            include: { profile: true },
+          },
+        },
+      });
+      break;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      const isTransientConnectionIssue =
+        message.includes('Server has closed the connection') ||
+        message.includes('Connection terminated unexpectedly') ||
+        message.includes('ECONNRESET');
+
+      if (!isTransientConnectionIssue) {
+        throw err;
+      }
+
+      if (attempt < 2) {
+        logger.warn(
+          { sessionId, err: message, attempt },
+          'session lookup transient DB failure; retrying once'
+        );
+        continue;
+      }
+
+      logger.error(
+        { sessionId, err: message, attempt },
+        'session lookup failed due to transient DB connection issue'
+      );
+      return null;
+    }
+  }
 
   if (!session) return null;
 

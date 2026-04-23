@@ -72,6 +72,12 @@ export default async function RecordDetailPage({ params }: Props) {
             {record.artist} — {record.title}
           </h1>
           <dl className="mt-4 grid gap-2 text-sm text-zinc-700 dark:text-zinc-300">
+            {record.quantity > 1 ? (
+              <div>
+                <dt className="inline font-medium text-zinc-500">Copies</dt>{' '}
+                <dd className="inline tabular-nums">{record.quantity}</dd>
+              </div>
+            ) : null}
             {record.year != null ? (
               <div>
                 <dt className="inline font-medium text-zinc-500">Year</dt>{' '}

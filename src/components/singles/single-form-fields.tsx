@@ -1,13 +1,17 @@
 import { RecordArtworkImage } from '@/components/records/record-artwork-image';
+import { StorageAssignmentFields } from '@/components/storage/storage-assignment-fields';
+
+import type { StorageAssignmentDefaults } from '@/lib/storage-form-defaults';
 
 type Defaults = {
   artist?: string;
   title?: string;
   bSideTitle?: string | null;
   year?: number | null;
+  quantity?: number;
   genre?: string | null;
-  storageLocation?: string | null;
   notes?: string | null;
+  storage?: StorageAssignmentDefaults;
 };
 
 export function SingleFormFields({
@@ -109,7 +113,7 @@ export function SingleFormFields({
         />
       </label>
 
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <label className="flex flex-col gap-1 text-xs font-medium text-zinc-700 dark:text-zinc-300">
           Year
           <input
@@ -123,6 +127,21 @@ export function SingleFormFields({
           />
         </label>
         <label className="flex flex-col gap-1 text-xs font-medium text-zinc-700 dark:text-zinc-300">
+          Copies
+          <input
+            name="quantity"
+            type="number"
+            min={1}
+            max={999}
+            defaultValue={defaults?.quantity ?? 1}
+            className="rounded border border-zinc-300 px-2 py-1.5 text-sm dark:border-zinc-600 dark:bg-zinc-950"
+            aria-describedby="quantity-hint-single"
+          />
+          <span id="quantity-hint-single" className="sr-only">
+            How many physical copies you own of this single
+          </span>
+        </label>
+        <label className="flex flex-col gap-1 text-xs font-medium text-zinc-700 dark:text-zinc-300">
           Genre
           <input
             name="genre"
@@ -131,16 +150,9 @@ export function SingleFormFields({
             placeholder="Optional"
           />
         </label>
-        <label className="flex flex-col gap-1 text-xs font-medium text-zinc-700 dark:text-zinc-300">
-          Storage
-          <input
-            name="storageLocation"
-            defaultValue={defaults?.storageLocation ?? ''}
-            className="rounded border border-zinc-300 px-2 py-1.5 text-sm dark:border-zinc-600 dark:bg-zinc-950"
-            placeholder="Optional"
-          />
-        </label>
       </div>
+
+      <StorageAssignmentFields variant="single" defaults={defaults?.storage} />
 
       <label className="flex flex-col gap-1 text-xs font-medium text-zinc-700 dark:text-zinc-300">
         Notes

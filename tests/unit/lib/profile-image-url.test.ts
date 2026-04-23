@@ -10,6 +10,8 @@ describe('profileImageUrl', () => {
   });
 
   it('omits query when no timestamp', () => {
-    expect(profileImageUrl('user1', null)).toBe('/api/users/user1/profile-image');
+    expect(profileImageUrl('user1', null)).toBe(
+      '/api/users/user1/profile-image'
+    );
   });
 });

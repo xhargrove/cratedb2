@@ -1,6 +1,6 @@
 import { prisma } from '@/db/client';
 import { logger } from '@/lib/logger';
-import { deleteArtworkFile } from '@/server/storage/local-artwork-store';
+import { deleteArtworkObject } from '@/server/storage/artwork-store';
 
 /**
  * Deletes only when both `id` and `ownerId` match.
@@ -19,7 +19,7 @@ export async function deleteRecordForOwner(id: string, ownerId: string) {
 
   if (result.count === 1 && row?.artworkKey) {
     try {
-      await deleteArtworkFile(row.artworkKey);
+      await deleteArtworkObject(row.artworkKey);
     } catch (e) {
       logger.warn(
         { err: e, recordId: id, artworkKey: row.artworkKey },

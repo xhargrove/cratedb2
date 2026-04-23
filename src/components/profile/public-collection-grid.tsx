@@ -11,6 +11,7 @@ function toDisplayRows(rows: PublicCollectionRecordRow[]): RecordDisplayRow[] {
     year: r.year,
     genre: r.genre,
     storageLocation: null,
+    quantity: r.quantity,
     artworkKey: r.artworkKey,
     artworkUpdatedAt: r.artworkUpdatedAt,
   }));

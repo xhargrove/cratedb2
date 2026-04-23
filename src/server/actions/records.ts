@@ -7,12 +7,15 @@ import { prisma } from '@/db/client';
 import { logger } from '@/lib/logger';
 import {
   artworkRelativeKey,
-  deleteArtworkFile,
-  writeArtworkFile,
-} from '@/server/storage/local-artwork-store';
+} from '@/server/storage/artwork-keys';
+import {
+  deleteArtworkObject,
+  writeArtworkObject,
+} from '@/server/storage/artwork-store';
 import { parseArtworkFileUpload } from '@/lib/validations/artwork';
 import { parseRecordForm, parseRecordId } from '@/lib/validations/record';
 import { requireUser } from '@/server/auth/require-user';
+import { storageContainerExistsForOwner } from '@/server/containers/assert-owned';
 import { createRecordForOwner } from '@/server/records/create';
 import { deleteRecordForOwner } from '@/server/records/delete';
 import { getRecordByIdForOwner } from '@/server/records/get-by-id-for-owner';
@@ -25,6 +28,7 @@ export type RecordActionState = { error?: string; ok?: boolean } | null;
 function revalidateRecordPaths(recordId?: string) {
   revalidatePath('/dashboard');
   revalidatePath('/dashboard/records');
+  revalidatePath('/dashboard/containers');
   if (recordId) {
     revalidatePath(`/dashboard/records/${recordId}`);
     revalidatePath(`/dashboard/records/${recordId}/edit`);
@@ -47,6 +51,16 @@ export async function createRecordAction(
     return { error: artworkParsed.error };
   }
 
+  if (parsed.data.containerId) {
+    const allowed = await storageContainerExistsForOwner(
+      parsed.data.containerId,
+      user.id
+    );
+    if (!allowed) {
+      return { error: 'Invalid container selection.' };
+    }
+  }
+
   let record;
   try {
     record = await createRecordForOwner(user.id, parsed.data);
@@ -58,7 +72,7 @@ export async function createRecordAction(
   if (artworkParsed.kind === 'present') {
     const key = artworkRelativeKey(user.id, record.id, artworkParsed.mimeType);
     try {
-      await writeArtworkFile(key, artworkParsed.buffer);
+      await writeArtworkObject(key, artworkParsed.buffer, artworkParsed.mimeType);
       await prisma.collectionRecord.update({
         where: { id: record.id },
         data: {
@@ -72,7 +86,7 @@ export async function createRecordAction(
         { err: e, recordId: record.id },
         'createRecord artwork failed'
       );
-      await deleteArtworkFile(key).catch(() => {});
+      await deleteArtworkObject(key).catch(() => {});
       await prisma.collectionRecord
         .delete({ where: { id: record.id } })
         .catch(() => {});
@@ -91,7 +105,7 @@ export async function createRecordAction(
       if (cover) {
         const key = artworkRelativeKey(user.id, record.id, cover.mimeType);
         try {
-          await writeArtworkFile(key, cover.buffer);
+          await writeArtworkObject(key, cover.buffer, cover.mimeType);
           await prisma.collectionRecord.update({
             where: { id: record.id },
             data: {
@@ -105,7 +119,7 @@ export async function createRecordAction(
             { err: e, recordId: record.id },
             'createRecord Spotify cover failed — record saved without artwork'
           );
-          await deleteArtworkFile(key).catch(() => {});
+          await deleteArtworkObject(key).catch(() => {});
         }
       }
     }
@@ -144,6 +158,16 @@ export async function updateRecordAction(
     return { error: artworkParsed.error };
   }
 
+  if (parsed.data.containerId) {
+    const allowed = await storageContainerExistsForOwner(
+      parsed.data.containerId,
+      user.id
+    );
+    if (!allowed) {
+      return { error: 'Invalid container selection.' };
+    }
+  }
+
   let updated: boolean;
   try {
     updated = await updateRecordForOwner(idParsed.id, user.id, parsed.data);
@@ -170,7 +194,7 @@ export async function updateRecordAction(
         },
       });
       if (prevKey) {
-        await deleteArtworkFile(prevKey);
+        await deleteArtworkObject(prevKey);
       }
     } else if (artworkParsed.kind === 'present') {
       const newKey = artworkRelativeKey(
@@ -179,7 +203,11 @@ export async function updateRecordAction(
         artworkParsed.mimeType
       );
       try {
-        await writeArtworkFile(newKey, artworkParsed.buffer);
+        await writeArtworkObject(
+          newKey,
+          artworkParsed.buffer,
+          artworkParsed.mimeType
+        );
         await prisma.collectionRecord.updateMany({
           where: { id: idParsed.id, ownerId: user.id },
           data: {
@@ -189,10 +217,10 @@ export async function updateRecordAction(
           },
         });
         if (existing.artworkKey && existing.artworkKey !== newKey) {
-          await deleteArtworkFile(existing.artworkKey);
+          await deleteArtworkObject(existing.artworkKey);
         }
       } catch (inner) {
-        await deleteArtworkFile(newKey).catch(() => {});
+        await deleteArtworkObject(newKey).catch(() => {});
         throw inner;
       }
     }
@@ -229,7 +257,7 @@ export async function updateRecordAction(
             );
             const prevKey = row.artworkKey;
             try {
-              await writeArtworkFile(newKey, cover.buffer);
+              await writeArtworkObject(newKey, cover.buffer, cover.mimeType);
               await prisma.collectionRecord.updateMany({
                 where: { id: idParsed.id, ownerId: user.id },
                 data: {
@@ -239,10 +267,10 @@ export async function updateRecordAction(
                 },
               });
               if (prevKey && prevKey !== newKey) {
-                await deleteArtworkFile(prevKey);
+                await deleteArtworkObject(prevKey);
               }
             } catch (inner) {
-              await deleteArtworkFile(newKey).catch(() => {});
+              await deleteArtworkObject(newKey).catch(() => {});
               throw inner;
             }
           }

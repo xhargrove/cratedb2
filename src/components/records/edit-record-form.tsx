@@ -2,10 +2,15 @@
 
 import { useActionState, useRef, useState } from 'react';
 
+import type { PhysicalStorageKind } from '@/generated/prisma/client';
 import { recordArtworkUrl } from '@/lib/record-artwork-url';
+import { storageAssignmentDefaultsFromRow } from '@/lib/storage-form-defaults';
 import { updateRecordAction } from '@/server/actions/records';
 
-import { RecordFormFields } from '@/components/records/record-form-fields';
+import {
+  RecordFormFields,
+  type ContainerSelectOption,
+} from '@/components/records/record-form-fields';
 import { SpotifyAlbumSearch } from '@/components/records/spotify-album-search';
 
 type RecordRow = {
@@ -13,12 +18,20 @@ type RecordRow = {
   artist: string;
   title: string;
   year: number | null;
+  quantity: number;
   genre: string | null;
+  storageKind: PhysicalStorageKind;
+  shelfRow: number | null;
+  shelfColumn: number | null;
+  crateNumber: number | null;
+  boxNumber: number | null;
+  boxCustomLabel: string | null;
   storageLocation: string | null;
   notes: string | null;
   artworkKey: string | null;
   artworkUpdatedAt: Date | string | null;
   spotifyAlbumId: string | null;
+  containerId: string | null;
 };
 
 function applySpotifyToFormFields(
@@ -43,9 +56,11 @@ function applySpotifyToFormFields(
 export function EditRecordForm({
   record,
   spotifySearch,
+  containerOptions,
 }: {
   record: RecordRow;
   spotifySearch: { enabled: true } | { enabled: false; reason: string };
+  containerOptions: ContainerSelectOption[];
 }) {
   const [state, formAction, pending] = useActionState(updateRecordAction, null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -103,13 +118,16 @@ export function EditRecordForm({
           artworkMode="edit"
           artworkPreviewUrl={artworkPreviewUrl}
           spotifyCoverPreviewUrl={spotifyCoverPreviewUrl}
+          containerOptions={containerOptions}
           defaults={{
             artist: record.artist,
             title: record.title,
             year: record.year,
+            quantity: record.quantity,
             genre: record.genre,
-            storageLocation: record.storageLocation,
+            storage: storageAssignmentDefaultsFromRow(record),
             notes: record.notes,
+            containerId: record.containerId,
           }}
         />
         <button

@@ -21,11 +21,40 @@ model User {
   sessions Session[]
   records          CollectionRecord[]
   singles          CollectionSingle[]
+  twelveInchSingles CollectionTwelveInchSingle[]
   wantlistItems WantlistItem[]
   followsOutgoing UserFollow[] @relation("FollowOutgoing")
   followsIncoming UserFollow[] @relation("FollowIncoming")
+  storageContainers StorageContainer[]
 
   @@index([email])
+}
+
+/// User-defined physical unit (shelf / box / crate) for organizing albums; optional image; QR points at live dashboard URL.
+enum StorageContainerKind {
+  SHELF
+  BOX
+  CRATE
+}
+
+model StorageContainer {
+  id           String               @id @default(cuid())
+  ownerId      String
+  owner        User                 @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  name         String
+  kind         StorageContainerKind
+  locationNote String?
+  /// Relative object key: `{ownerId}/containers/{containerId}.{ext}` (optional custom image).
+  imageKey       String?
+  imageMimeType  String?
+  imageUpdatedAt DateTime?
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+
+  records CollectionRecord[]
+
+  @@index([ownerId])
+  @@map("storage_containers")
 }
 
 /// Optional display fields (1:1 with User). Separates auth identity from public profile data.
@@ -57,6 +86,14 @@ enum ProfileVibe {
   LISTENER
 }
 
+/// Physical rack / crate / box assignment (structured); `storageLocation` holds a display string for search & facets.
+enum PhysicalStorageKind {
+  NONE
+  SHELF
+  CRATE
+  BOX
+}
+
 /// Opaque server-side session (cookie stores Session.id).
 model Session {
   id        String   @id @default(cuid())
@@ -78,6 +115,12 @@ model CollectionRecord {
   title           String
   year            Int?
   genre           String?
+  storageKind     PhysicalStorageKind @default(NONE)
+  shelfRow        Int?
+  shelfColumn     Int?
+  crateNumber     Int?
+  boxNumber       Int?
+  boxCustomLabel  String?
   storageLocation String?
   notes           String?
   /// Relative path under local artwork storage root (`ARTWORK_STORAGE_ROOT`): `{ownerId}/{recordId}.{ext}`
@@ -95,10 +138,18 @@ model CollectionRecord {
   /// Spotify album id when the row was prefilled from search (optional).
   spotifyAlbumId       String?
 
+  /// Number of physical copies owned (same pressing / listing).
+  quantity Int @default(1)
+
+  /// Optional physical container assignment (distinct from facet-oriented `storageKind` / shelf grid fields).
+  containerId String?
+  container   StorageContainer? @relation(fields: [containerId], references: [id], onDelete: SetNull)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([ownerId])
+  @@index([containerId])
   @@map("records")
 }
 
@@ -113,6 +164,12 @@ model CollectionSingle {
   bSideTitle      String?
   year            Int?
   genre           String?
+  storageKind     PhysicalStorageKind @default(NONE)
+  shelfRow        Int?
+  shelfColumn     Int?
+  crateNumber     Int?
+  boxNumber       Int?
+  boxCustomLabel  String?
   storageLocation String?
   notes           String?
   /// Relative path: `{ownerId}/singles/{singleId}.{ext}`
@@ -123,11 +180,51 @@ model CollectionSingle {
   /// Spotify track id when prefilled from song search (optional).
   spotifyTrackId  String?
 
+  /// Number of physical copies owned (same pressing / listing).
+  quantity Int @default(1)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([ownerId])
   @@map("collection_singles")
+}
+
+/// Owned **12-inch single** (maxi / extended) — same row shape as 45s; separate shelf category.
+model CollectionTwelveInchSingle {
+  id              String   @id @default(cuid())
+  ownerId         String
+  owner           User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  artist          String
+  title           String
+  /// Optional B-side song title.
+  bSideTitle      String?
+  year            Int?
+  genre           String?
+  storageKind     PhysicalStorageKind @default(NONE)
+  shelfRow        Int?
+  shelfColumn     Int?
+  crateNumber     Int?
+  boxNumber       Int?
+  boxCustomLabel  String?
+  storageLocation String?
+  notes           String?
+  /// Relative path: `{ownerId}/twelve-inch/{twelveInchId}.{ext}`
+  artworkKey      String?
+  artworkMimeType String?
+  artworkUpdatedAt DateTime?
+
+  /// Spotify track id when prefilled from song search (optional).
+  spotifyTrackId  String?
+
+  /// Number of physical copies owned (same pressing / listing).
+  quantity Int @default(1)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([ownerId])
+  @@map("collection_twelve_inch_singles")
 }
 
 /// Desired release the user does not own yet — freeform metadata, separate from `CollectionRecord`.

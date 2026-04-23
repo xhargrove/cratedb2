@@ -18,11 +18,7 @@ export function PublicProfileHeader({
   return (
     <div className="relative overflow-hidden rounded-2xl border border-zinc-200 bg-gradient-to-br from-amber-500/[0.07] via-white to-zinc-50 shadow-sm dark:border-zinc-800 dark:from-amber-500/[0.08] dark:via-zinc-950 dark:to-zinc-900">
       <div className="relative flex flex-col gap-5 p-6 sm:flex-row sm:items-start">
-        <ProfileAvatar
-          src={profileImageSrc}
-          initials={initials}
-          size={80}
-        />
+        <ProfileAvatar src={profileImageSrc} initials={initials} size={80} />
         <div className="min-w-0 flex-1 space-y-3">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">

@@ -75,6 +75,12 @@ export default async function SingleDetailPage({ params }: Props) {
             </p>
           ) : null}
           <dl className="mt-4 grid gap-2 text-sm text-zinc-700 dark:text-zinc-300">
+            {single.quantity > 1 ? (
+              <div>
+                <dt className="inline font-medium text-zinc-500">Copies</dt>{' '}
+                <dd className="inline tabular-nums">{single.quantity}</dd>
+              </div>
+            ) : null}
             {single.year != null ? (
               <div>
                 <dt className="inline font-medium text-zinc-500">Year</dt>{' '}

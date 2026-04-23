@@ -3,6 +3,10 @@
 import { redirect } from 'next/navigation';
 
 import { prisma } from '@/db/client';
+import {
+  enforceLoginRateLimit,
+  enforceSignupRateLimit,
+} from '@/server/auth/rate-limit';
 import { hashPassword, verifyPassword } from '@/server/auth/password';
 import {
   clearSessionCookie,
@@ -15,6 +19,7 @@ import { logger } from '@/lib/logger';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/client';
 
 export type AuthActionState = { error?: string } | null;
+const GENERIC_AUTH_FAILURE = 'Unable to authenticate right now. Try again.';
 
 export async function signupAction(
   _prevState: AuthActionState,
@@ -23,6 +28,15 @@ export async function signupAction(
   const parsed = parseSignupForm(formData);
   if (!parsed.ok) {
     return { error: parsed.error };
+  }
+
+  const signupRate = await enforceSignupRateLimit(parsed.data.email);
+  if (!signupRate.allowed) {
+    logger.warn(
+      { retryAfterSec: signupRate.retryAfterSec },
+      'signup rate limit exceeded'
+    );
+    return { error: GENERIC_AUTH_FAILURE };
   }
 
   const passwordHash = await hashPassword(parsed.data.password);
@@ -44,10 +58,10 @@ export async function signupAction(
     await setSessionCookie(sessionId);
   } catch (e) {
     if (e instanceof PrismaClientKnownRequestError && e.code === 'P2002') {
-      return { error: 'An account with this email already exists.' };
+      return { error: GENERIC_AUTH_FAILURE };
     }
     logger.error({ err: e }, 'signup failed');
-    return { error: 'Something went wrong. Try again.' };
+    return { error: GENERIC_AUTH_FAILURE };
   }
 
   redirect('/dashboard');
@@ -62,6 +76,15 @@ export async function loginAction(
     return { error: parsed.error };
   }
 
+  const loginRate = await enforceLoginRateLimit(parsed.data.email);
+  if (!loginRate.allowed) {
+    logger.warn(
+      { retryAfterSec: loginRate.retryAfterSec },
+      'login rate limit exceeded'
+    );
+    return { error: GENERIC_AUTH_FAILURE };
+  }
+
   const user = await prisma.user.findUnique({
     where: { email: parsed.data.email },
   });
@@ -70,7 +93,7 @@ export async function loginAction(
     user && (await verifyPassword(user.passwordHash, parsed.data.password));
 
   if (!ok) {
-    return { error: 'Invalid email or password.' };
+    return { error: GENERIC_AUTH_FAILURE };
   }
 
   const sessionId = await createSession(user.id);

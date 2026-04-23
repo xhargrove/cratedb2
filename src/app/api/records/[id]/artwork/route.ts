@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/db/client';
 import { getCurrentUser } from '@/server/auth/get-current-user';
 import { isOwnerCollectionPublic } from '@/server/public/collection-access';
-import { readArtworkFile } from '@/server/storage/local-artwork-store';
+import { readArtworkObject } from '@/server/storage/artwork-store';
 
 /**
  * Serve artwork for the owner, or for anyone if the owner's collection is public.
@@ -37,12 +37,15 @@ export async function GET(
   }
 
   try {
-    const buf = await readArtworkFile(record.artworkKey);
+    const object = await readArtworkObject(record.artworkKey);
+    if (!object) {
+      return new NextResponse('Not found', { status: 404 });
+    }
     const cacheControl = isOwner
       ? 'private, max-age=3600'
       : 'public, max-age=3600';
 
-    return new NextResponse(new Uint8Array(buf), {
+    return new NextResponse(new Uint8Array(object.buffer), {
       status: 200,
       headers: {
         'Content-Type': record.artworkMimeType,

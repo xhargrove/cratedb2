@@ -20,12 +20,19 @@ export function RecordCard({ record, detailHref }: RecordCardProps) {
 
   const inner = (
     <>
-      <RecordArtworkImage
-        src={artworkSrc}
-        alt=""
-        className="aspect-square w-full"
-        imgClassName="h-full w-full object-cover"
-      />
+      <div className="relative">
+        <RecordArtworkImage
+          src={artworkSrc}
+          alt=""
+          className="aspect-square w-full"
+          imgClassName="h-full w-full object-cover"
+        />
+        {record.quantity > 1 ? (
+          <span className="absolute right-2 top-2 rounded-full bg-black/70 px-2 py-0.5 text-xs font-semibold tabular-nums text-white">
+            ×{record.quantity}
+          </span>
+        ) : null}
+      </div>
       <div className="flex flex-col p-4">
         <span className="font-semibold text-zinc-900 dark:text-zinc-100">
           {record.artist}
@@ -34,6 +41,12 @@ export function RecordCard({ record, detailHref }: RecordCardProps) {
           {record.title}
         </span>
         <dl className="mt-3 space-y-1 text-xs text-zinc-500 dark:text-zinc-400">
+          {record.quantity > 1 ? (
+            <div>
+              <dt className="inline font-medium">Copies</dt>{' '}
+              <dd className="inline tabular-nums">{record.quantity}</dd>
+            </div>
+          ) : null}
           {record.year != null ? (
             <div>
               <dt className="inline font-medium">Year</dt>{' '}

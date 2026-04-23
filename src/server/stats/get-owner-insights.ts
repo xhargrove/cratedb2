@@ -8,6 +8,22 @@ import {
 } from '@/server/stats/collection-aggregates';
 import { addBarWidths } from '@/server/stats/shape';
 import type { OwnerInsights } from '@/server/stats/types';
+import {
+  countDistinctSingleArtistsForOwner,
+  groupSinglesArtistsForOwner,
+  groupSinglesGenresForOwner,
+  groupSinglesYearsForOwner,
+  singlesArtworkCountsForOwner,
+  singlesCountsForOwner,
+} from '@/server/stats/singles-aggregates';
+import {
+  countDistinctTwelveInchArtistsForOwner,
+  groupTwelveInchArtistsForOwner,
+  groupTwelveInchGenresForOwner,
+  groupTwelveInchYearsForOwner,
+  twelveInchArtworkCountsForOwner,
+  twelveInchCountsForOwner,
+} from '@/server/stats/twelve-inch-aggregates';
 import { countWantlistItemsForOwner } from '@/server/stats/wantlist-stats';
 
 function percentWithArtwork(total: number, withArtwork: number): number | null {
@@ -30,6 +46,18 @@ export async function getOwnerInsights(
     artistsRaw,
     yearsRaw,
     follows,
+    singlesRowAndCopies,
+    distinctArtistsInSingles,
+    singlesArtwork,
+    singlesGenresRaw,
+    singlesArtistsRaw,
+    singlesYearsRaw,
+    twelveInchRowAndCopies,
+    distinctArtistsInTwelveInch,
+    twelveInchArtwork,
+    twelveInchGenresRaw,
+    twelveInchArtistsRaw,
+    twelveInchYearsRaw,
   ] = await Promise.all([
     countWantlistItemsForOwner(ownerId),
     countDistinctArtistsForOwner(ownerId),
@@ -38,9 +66,29 @@ export async function getOwnerInsights(
     groupArtistsForOwner(ownerId),
     groupYearsForOwner(ownerId),
     getFollowCounts(ownerId),
+    singlesCountsForOwner(ownerId),
+    countDistinctSingleArtistsForOwner(ownerId),
+    singlesArtworkCountsForOwner(ownerId),
+    groupSinglesGenresForOwner(ownerId),
+    groupSinglesArtistsForOwner(ownerId),
+    groupSinglesYearsForOwner(ownerId),
+    twelveInchCountsForOwner(ownerId),
+    countDistinctTwelveInchArtistsForOwner(ownerId),
+    twelveInchArtworkCountsForOwner(ownerId),
+    groupTwelveInchGenresForOwner(ownerId),
+    groupTwelveInchArtistsForOwner(ownerId),
+    groupTwelveInchYearsForOwner(ownerId),
   ]);
 
   const { total: recordCount, withArtwork } = artwork;
+  const { rowCount: singleCount, totalCopies: singlesTotalCopies } =
+    singlesRowAndCopies;
+  const { total: singlesTotal, withArtwork: singlesWithArtwork } =
+    singlesArtwork;
+  const { rowCount: twelveInchCount, totalCopies: twelveInchTotalCopies } =
+    twelveInchRowAndCopies;
+  const { total: twelveInchTotal, withArtwork: twelveInchWithArtwork } =
+    twelveInchArtwork;
 
   return {
     recordCount,
@@ -53,6 +101,29 @@ export async function getOwnerInsights(
     genres: addBarWidths(genresRaw),
     artists: addBarWidths(artistsRaw),
     topReleaseYears: addBarWidths(yearsRaw),
+    singleCount,
+    singlesTotalCopies,
+    distinctArtistsInSingles,
+    singlesArtwork: {
+      withArtwork: singlesWithArtwork,
+      percentWithArtwork: percentWithArtwork(singlesTotal, singlesWithArtwork),
+    },
+    singlesGenres: addBarWidths(singlesGenresRaw),
+    singlesArtists: addBarWidths(singlesArtistsRaw),
+    singlesTopReleaseYears: addBarWidths(singlesYearsRaw),
+    twelveInchCount,
+    twelveInchTotalCopies,
+    distinctArtistsInTwelveInch,
+    twelveInchArtwork: {
+      withArtwork: twelveInchWithArtwork,
+      percentWithArtwork: percentWithArtwork(
+        twelveInchTotal,
+        twelveInchWithArtwork
+      ),
+    },
+    twelveInchGenres: addBarWidths(twelveInchGenresRaw),
+    twelveInchArtists: addBarWidths(twelveInchArtistsRaw),
+    twelveInchTopReleaseYears: addBarWidths(twelveInchYearsRaw),
     follows,
   };
 }

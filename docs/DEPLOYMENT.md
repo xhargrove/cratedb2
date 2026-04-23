@@ -14,6 +14,12 @@ This file is a **short operator runbook**. Full variable reference and feature n
 6. **Build:** `npm run build`
 7. **Start:** `npm run start` (or your process manager wrapping `next start`). Set `NODE_ENV=production` as usual for Next.js.
 
+### Runtime startup guard (fail-fast env)
+
+- Cratedb validates required server env during Node runtime registration (`src/instrumentation.ts`).
+- If required env is missing/invalid (for example `DATABASE_URL`), startup fails immediately instead of failing later on first DB call.
+- Treat this as a deployment gate, not a warning.
+
 ## If migrations are missing or stale
 
 The app expects the database schema to match the migration history. If migrations were not applied:
@@ -21,13 +27,48 @@ The app expects the database schema to match the migration history. If migration
 - API routes and server actions that touch the DB may throw **Prisma errors** (unknown table/column, migration pending, etc.).
 - There is **no** runtime auto-migrate in production — operators must run **`npm run db:deploy`** as part of deploy.
 
-## Artwork storage (filesystem)
+## Artwork storage (S3-compatible)
 
-- Cratedb stores artwork **on the local filesystem** under **`ARTWORK_STORAGE_ROOT`**, defaulting to `<cwd>/storage/artwork`.
-- **Albums and singles** share this root; paths in the DB are relative keys, not blobs in Postgres.
-- **Ephemeral/serverless** platforms often lose disk on redeploy — configure a **mounted volume** or accept that artwork will disappear unless you move to external storage later.
+- Production target is **`ARTWORK_STORAGE_BACKEND=s3`** with S3-compatible object storage.
+- Required when backend is `s3`: `S3_BUCKET`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`.
+- Optional for S3-compatible providers: `S3_ENDPOINT`, `S3_FORCE_PATH_STYLE`.
+- DB continues storing relative keys (`artworkKey`) and metadata only; artwork bytes stay outside Postgres.
+- Local backend (`ARTWORK_STORAGE_BACKEND=local`) exists for development and migration support.
 
-See README § “Optional — artwork” for privacy rules (API `403` when collection is private).
+See README § “Artwork storage (S3-compatible object storage)” for privacy and key details.
+
+## Container QR codes
+
+- Container cover images use the same artwork pipeline as albums (`imageKey` / object storage).
+- Each QR encodes the **absolute** URL to `/dashboard/containers/[id]` (dashboard auth). Scanning opens the live detail page after sign-in; the payload is only the URL, not inventory data.
+- In production, set **`NEXT_PUBLIC_APP_URL`** to your canonical public origin (for example `https://your-domain.com`) so QR targets stay correct behind reverse proxies. If unset, the app derives the origin from incoming request headers when possible.
+
+### Migrating existing local artwork objects
+
+If rows already reference local files, run:
+
+```bash
+npm run migrate:artwork:to-object -- --dry-run
+npm run migrate:artwork:to-object
+```
+
+- Script is idempotent by default (skips keys that already exist in object storage).
+- Add `--force` to re-upload existing objects.
+
+## Auth abuse protection assumptions
+
+- App-level rate limiting is enforced in server actions for `loginAction` and `signupAction` (request fingerprint + email, fixed window).
+- This limiter is in-process memory by design for this sprint. In multi-instance deployments it is best-effort per instance.
+- Production should still enforce edge/WAF controls (for example CDN/WAF per-IP throttle and bot protection).
+
+## Baseline security headers
+
+Middleware applies baseline headers on app responses:
+
+- `X-Frame-Options: DENY`
+- `X-Content-Type-Options: nosniff`
+- `Referrer-Policy: strict-origin-when-cross-origin`
+- `Strict-Transport-Security` only when request protocol is HTTPS
 
 ## After deploy
 

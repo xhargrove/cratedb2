@@ -2,7 +2,9 @@
 
 import { useActionState } from 'react';
 
+import type { PhysicalStorageKind } from '@/generated/prisma/client';
 import { singleArtworkUrl } from '@/lib/single-artwork-url';
+import { storageAssignmentDefaultsFromRow } from '@/lib/storage-form-defaults';
 import { updateSingleAction } from '@/server/actions/singles';
 
 import { SingleFormFields } from '@/components/singles/single-form-fields';
@@ -13,7 +15,14 @@ type SingleRow = {
   title: string;
   bSideTitle: string | null;
   year: number | null;
+  quantity: number;
   genre: string | null;
+  storageKind: PhysicalStorageKind;
+  shelfRow: number | null;
+  shelfColumn: number | null;
+  crateNumber: number | null;
+  boxNumber: number | null;
+  boxCustomLabel: string | null;
   storageLocation: string | null;
   notes: string | null;
   artworkKey: string | null;
@@ -54,8 +63,9 @@ export function EditSingleForm({ single }: { single: SingleRow }) {
           title: single.title,
           bSideTitle: single.bSideTitle,
           year: single.year,
+          quantity: single.quantity,
           genre: single.genre,
-          storageLocation: single.storageLocation,
+          storage: storageAssignmentDefaultsFromRow(single),
           notes: single.notes,
         }}
       />

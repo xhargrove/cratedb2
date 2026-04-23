@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   parseRecordForm,
   parseRecordId,
-  recordWriteFormSchema,
+  recordBaseFieldsSchema,
 } from '@/lib/validations/record';
 
 describe('parseRecordForm', () => {
@@ -11,6 +11,7 @@ describe('parseRecordForm', () => {
     const fd = new FormData();
     fd.set('artist', 'Miles Davis');
     fd.set('title', 'Kind of Blue');
+    addStorageNone(fd);
     const r = parseRecordForm(fd);
     expect(r.ok).toBe(true);
     if (r.ok) {
@@ -23,6 +24,7 @@ describe('parseRecordForm', () => {
     const fd = new FormData();
     fd.set('artist', '  ');
     fd.set('title', 'X');
+    addStorageNone(fd);
     const r = parseRecordForm(fd);
     expect(r.ok).toBe(false);
   });
@@ -32,27 +34,94 @@ describe('parseRecordForm', () => {
     fd.set('artist', 'A');
     fd.set('title', 'B');
     fd.set('year', '1959');
+    addStorageNone(fd);
     const r = parseRecordForm(fd);
     expect(r.ok).toBe(true);
     if (r.ok) expect(r.data.year).toBe(1959);
   });
 
-  it('parses absent optional fields as undefined', () => {
+  it('parses absent optional fields', () => {
     const fd = new FormData();
     fd.set('artist', 'A');
     fd.set('title', 'B');
+    addStorageNone(fd);
     const r = parseRecordForm(fd);
     expect(r.ok).toBe(true);
     if (r.ok) {
       expect(r.data.genre).toBeUndefined();
-      expect(r.data.storageLocation).toBeUndefined();
+      expect(r.data.storageKind).toBe('NONE');
+      expect(r.data.storageLocation).toBeNull();
+      expect(r.data.quantity).toBe(1);
     }
+  });
+
+  it('parses copies / quantity', () => {
+    const fd = new FormData();
+    fd.set('artist', 'A');
+    fd.set('title', 'B');
+    fd.set('quantity', '3');
+    addStorageNone(fd);
+    const r = parseRecordForm(fd);
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.data.quantity).toBe(3);
+  });
+
+  it('parses structured shelf storage', () => {
+    const fd = new FormData();
+    fd.set('artist', 'A');
+    fd.set('title', 'B');
+    fd.set('storageKind', 'SHELF');
+    fd.set('shelfRow', '2');
+    fd.set('shelfColumn', '3');
+    fd.set('crateNumber', '');
+    fd.set('boxPreset', '');
+    fd.set('boxCustomLabel', '');
+    const r = parseRecordForm(fd);
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(r.data.storageKind).toBe('SHELF');
+      expect(r.data.shelfRow).toBe(2);
+      expect(r.data.shelfColumn).toBe(3);
+      expect(r.data.storageLocation).toBe('Shelf · Row 2 · Column 3');
+    }
+  });
+
+  it('parses optional container id', () => {
+    const fd = new FormData();
+    fd.set('artist', 'A');
+    fd.set('title', 'B');
+    addStorageNone(fd);
+    fd.set('containerId', 'cuidcontainer1234567890123');
+    const r = parseRecordForm(fd);
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.data.containerId).toBe('cuidcontainer1234567890123');
+  });
+
+  it('normalizes empty container id to null', () => {
+    const fd = new FormData();
+    fd.set('artist', 'A');
+    fd.set('title', 'B');
+    addStorageNone(fd);
+    fd.set('containerId', '');
+    const r = parseRecordForm(fd);
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.data.containerId).toBeNull();
   });
 });
 
-describe('recordWriteFormSchema', () => {
+function addStorageNone(fd: FormData) {
+  fd.set('storageKind', 'NONE');
+  fd.set('shelfRow', '');
+  fd.set('shelfColumn', '');
+  fd.set('crateNumber', '');
+  fd.set('boxPreset', '');
+  fd.set('boxCustomLabel', '');
+  fd.set('containerId', '');
+}
+
+describe('recordBaseFieldsSchema', () => {
   it('rejects invalid year range', () => {
-    const r = recordWriteFormSchema.safeParse({
+    const r = recordBaseFieldsSchema.safeParse({
       artist: 'a',
       title: 'b',
       year: 1850,

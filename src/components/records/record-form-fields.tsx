@@ -1,12 +1,21 @@
 import { RecordArtworkImage } from '@/components/records/record-artwork-image';
+import { StorageAssignmentFields } from '@/components/storage/storage-assignment-fields';
+
+import type { StorageAssignmentDefaults } from '@/lib/storage-form-defaults';
+
+export type ContainerSelectOption = { id: string; name: string };
 
 type Defaults = {
   artist?: string;
   title?: string;
   year?: number | null;
+  /** Owned copies for this listing (defaults to 1). */
+  quantity?: number;
   genre?: string | null;
-  storageLocation?: string | null;
   notes?: string | null;
+  storage?: StorageAssignmentDefaults;
+  /** Optional `CollectionRecord.containerId`. */
+  containerId?: string | null;
 };
 
 export function RecordFormFields({
@@ -14,6 +23,7 @@ export function RecordFormFields({
   artworkMode,
   artworkPreviewUrl,
   spotifyCoverPreviewUrl,
+  containerOptions,
 }: {
   defaults?: Defaults;
   artworkMode?: 'create' | 'edit';
@@ -21,6 +31,8 @@ export function RecordFormFields({
   artworkPreviewUrl?: string | null;
   /** Spotify album art URL when user picked a search result (browser preview only). */
   spotifyCoverPreviewUrl?: string | null;
+  /** When omitted, container assignment is cleared / not shown (hidden empty value). */
+  containerOptions?: ContainerSelectOption[] | null;
 }) {
   const showArtwork = artworkMode === 'create' || artworkMode === 'edit';
 
@@ -98,7 +110,7 @@ export function RecordFormFields({
           />
         </label>
       </div>
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <label className="flex flex-col gap-1 text-xs font-medium text-zinc-700 dark:text-zinc-300">
           Year
           <input
@@ -112,6 +124,21 @@ export function RecordFormFields({
           />
         </label>
         <label className="flex flex-col gap-1 text-xs font-medium text-zinc-700 dark:text-zinc-300">
+          Copies
+          <input
+            name="quantity"
+            type="number"
+            min={1}
+            max={999}
+            defaultValue={defaults?.quantity ?? 1}
+            className="rounded border border-zinc-300 px-2 py-1.5 text-sm dark:border-zinc-600 dark:bg-zinc-950"
+            aria-describedby="quantity-hint-record"
+          />
+          <span id="quantity-hint-record" className="sr-only">
+            How many physical copies you own of this album
+          </span>
+        </label>
+        <label className="flex flex-col gap-1 text-xs font-medium text-zinc-700 dark:text-zinc-300">
           Genre
           <input
             name="genre"
@@ -120,16 +147,30 @@ export function RecordFormFields({
             placeholder="Optional"
           />
         </label>
-        <label className="flex flex-col gap-1 text-xs font-medium text-zinc-700 dark:text-zinc-300">
-          Storage
-          <input
-            name="storageLocation"
-            defaultValue={defaults?.storageLocation ?? ''}
-            className="rounded border border-zinc-300 px-2 py-1.5 text-sm dark:border-zinc-600 dark:bg-zinc-950"
-            placeholder="Optional"
-          />
-        </label>
       </div>
+
+      <StorageAssignmentFields variant="album" defaults={defaults?.storage} />
+
+      {containerOptions === null || containerOptions === undefined ? (
+        <input type="hidden" name="containerId" value="" />
+      ) : (
+        <label className="flex flex-col gap-1 text-xs font-medium text-zinc-700 dark:text-zinc-300">
+          Physical container (optional)
+          <select
+            name="containerId"
+            defaultValue={defaults?.containerId ?? ''}
+            className="rounded border border-zinc-300 px-2 py-1.5 text-sm dark:border-zinc-600 dark:bg-zinc-950"
+          >
+            <option value="">None</option>
+            {containerOptions.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
+
       <label className="flex flex-col gap-1 text-xs font-medium text-zinc-700 dark:text-zinc-300">
         Notes
         <textarea
