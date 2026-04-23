@@ -30,6 +30,7 @@ describe('parseProfileUpdateForm', () => {
     expect(out.data.bio).toBe('spins funk');
     expect(out.data.vibe).toBe(ProfileVibe.DJ);
     expect(out.data.collectionPublic).toBe(true);
+    expect(out.data.removeProfileImage).toBe(false);
   });
 
   it('maps empty display name and bio to null', () => {
@@ -59,5 +60,14 @@ describe('parseProfileUpdateForm', () => {
     const fd = minimalForm({ vibe: 'FAKE_ROLE' });
     const out = parseProfileUpdateForm(fd);
     expect(out.ok).toBe(false);
+  });
+
+  it('parses remove profile image checkbox', () => {
+    const fd = minimalForm({ displayName: 'x', vibe: ProfileVibe.COLLECTOR });
+    fd.set('removeProfileImage', '1');
+    const out = parseProfileUpdateForm(fd);
+    expect(out.ok).toBe(true);
+    if (!out.ok) return;
+    expect(out.data.removeProfileImage).toBe(true);
   });
 });

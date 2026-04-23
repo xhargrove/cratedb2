@@ -34,6 +34,15 @@ export function artworkRelativeKey(
   return `${ownerId}/${recordId}.${ext}`;
 }
 
+/** Avatar / profile photo — one file per user, stable basename. */
+export function profileImageRelativeKey(
+  userId: string,
+  mimeType: AllowedArtworkMimeType
+): string {
+  const ext = extensionForMime(mimeType);
+  return `${userId}/profile.${ext}`;
+}
+
 /** Key for 45 singles — isolated under `singles/` per owner to avoid clashes with album artwork keys. */
 export function singleArtworkRelativeKey(
   ownerId: string,

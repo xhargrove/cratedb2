@@ -12,18 +12,24 @@ import {
   type ProfileActionState,
 } from '@/server/actions/profile';
 
+import { ProfileAvatar } from '@/components/profile/profile-avatar';
+
 export function EditProfileForm({
   userId,
   initialDisplayName,
   initialBio,
   initialVibe,
   initialCollectionPublic,
+  initialProfileImageSrc,
+  previewInitials,
 }: {
   userId: string;
   initialDisplayName: string | null;
   initialBio: string | null;
   initialVibe: ProfileVibe;
   initialCollectionPublic: boolean;
+  initialProfileImageSrc: string | null;
+  previewInitials: string;
 }) {
   const router = useRouter();
   const [state, formAction, pending] = useActionState<
@@ -40,6 +46,7 @@ export function EditProfileForm({
   return (
     <form
       action={formAction}
+      encType="multipart/form-data"
       className="grid gap-4 rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900"
     >
       <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
@@ -61,6 +68,42 @@ export function EditProfileForm({
           Profile saved.
         </p>
       ) : null}
+
+      <div className="flex flex-col gap-3 border-b border-zinc-200 pb-4 dark:border-zinc-700 sm:flex-row sm:items-start">
+        <ProfileAvatar
+          key={initialProfileImageSrc ?? 'no-photo'}
+          src={initialProfileImageSrc}
+          initials={previewInitials}
+          size={96}
+        />
+        <div className="flex min-w-0 flex-1 flex-col gap-2">
+          <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
+            Profile photo
+          </span>
+          <input
+            name="profileImage"
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/gif"
+            className="max-w-full text-sm text-zinc-800 file:mr-3 file:rounded-md file:border-0 file:bg-zinc-100 file:px-3 file:py-1.5 file:text-sm file:font-medium dark:text-zinc-200 dark:file:bg-zinc-800 dark:file:text-zinc-100"
+          />
+          <label className="flex cursor-pointer items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
+            <input
+              type="checkbox"
+              name="removeProfileImage"
+              value="1"
+              disabled={!initialProfileImageSrc}
+              className="rounded border-zinc-400 dark:border-zinc-500"
+            />
+            <span className={!initialProfileImageSrc ? 'opacity-50' : ''}>
+              Remove current photo
+            </span>
+          </label>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            Square photos work best. JPEG, PNG, WebP, or GIF — same limits as
+            collection artwork (max 3MB).
+          </p>
+        </div>
+      </div>
 
       <label className="flex flex-col gap-1 text-xs font-medium text-zinc-700 dark:text-zinc-300">
         Display name

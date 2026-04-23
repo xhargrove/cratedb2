@@ -1,5 +1,6 @@
 import { ProfileVibe } from '@/generated/prisma/client';
 
+import { profileImageUrl } from '@/lib/profile-image-url';
 import { profileVibeLabel } from '@/lib/profile-vibes';
 import { prisma } from '@/db/client';
 
@@ -10,6 +11,8 @@ export type PublicUserSummary = {
   bio: string | null;
   vibe: ProfileVibe;
   vibeLabel: string;
+  /** Same-origin URL for profile photo, or null. */
+  profileImageSrc: string | null;
 };
 
 /**
@@ -23,7 +26,13 @@ export async function getPublicUserSummary(
     select: {
       id: true,
       profile: {
-        select: { displayName: true, bio: true, vibe: true },
+        select: {
+          displayName: true,
+          bio: true,
+          vibe: true,
+          profileImageKey: true,
+          profileImageUpdatedAt: true,
+        },
       },
     },
   });
@@ -37,11 +46,17 @@ export async function getPublicUserSummary(
   const rawBio = user.profile?.bio?.trim();
   const bio = rawBio && rawBio.length > 0 ? rawBio : null;
 
+  const profileImageSrc =
+    user.profile?.profileImageKey && user.profile.profileImageUpdatedAt
+      ? profileImageUrl(user.id, user.profile.profileImageUpdatedAt.getTime())
+      : null;
+
   return {
     id: user.id,
     displayLabel,
     bio,
     vibe,
     vibeLabel: profileVibeLabel(vibe),
+    profileImageSrc,
   };
 }

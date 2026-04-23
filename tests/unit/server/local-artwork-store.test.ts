@@ -5,6 +5,7 @@ import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
+  profileImageRelativeKey,
   resolveArtworkAbsolutePath,
   singleArtworkRelativeKey,
   writeArtworkFile,
@@ -37,6 +38,10 @@ describe('local-artwork-store', () => {
     expect(singleArtworkRelativeKey('u1', 's1', 'image/jpeg')).toBe(
       'u1/singles/s1.jpg'
     );
+  });
+
+  it('builds profile image key with stable filename', () => {
+    expect(profileImageRelativeKey('user1', 'image/png')).toBe('user1/profile.png');
   });
 
   it('writes and reads binary bytes', async () => {

@@ -23,6 +23,9 @@ export const profileUpdateSchema = z.object({
   collectionPublic: z.preprocess((v) => {
     return v === '1' || v === 'on' || v === true;
   }, z.boolean()),
+  removeProfileImage: z.preprocess((v) => {
+    return v === '1' || v === 'on' || v === true;
+  }, z.boolean()),
 });
 
 export type ProfileUpdateFields = z.infer<typeof profileUpdateSchema>;
@@ -33,6 +36,7 @@ export function parseProfileUpdateForm(formData: FormData) {
     bio: formData.get('bio'),
     vibe: formData.get('vibe'),
     collectionPublic: formData.get('collectionPublic'),
+    removeProfileImage: formData.get('removeProfileImage'),
   };
   const parsed = profileUpdateSchema.safeParse(raw);
   if (!parsed.success) {
@@ -50,6 +54,7 @@ export function parseProfileUpdateForm(formData: FormData) {
       bio: bioTrimmed === '' ? null : bioTrimmed,
       vibe: parsed.data.vibe,
       collectionPublic: parsed.data.collectionPublic,
+      removeProfileImage: parsed.data.removeProfileImage,
     },
   };
 }

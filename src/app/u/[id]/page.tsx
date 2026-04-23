@@ -100,6 +100,7 @@ export default async function PublicProfilePage({
           displayLabel={user.displayLabel}
           vibeLabel={user.vibeLabel}
           bio={user.bio}
+          profileImageSrc={user.profileImageSrc}
         />
         <div>
           <p className="text-sm text-zinc-600 dark:text-zinc-400">

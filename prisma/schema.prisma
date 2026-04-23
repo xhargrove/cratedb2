@@ -40,6 +40,10 @@ model Profile {
   vibe        ProfileVibe @default(COLLECTOR)
   /// When false, `/u/[id]` hides collection rows (profile header may still show).
   collectionPublic Boolean @default(true)
+  /// Relative path under ARTWORK_STORAGE_ROOT: `{userId}/profile.{ext}`
+  profileImageKey       String?
+  profileImageMimeType  String?
+  profileImageUpdatedAt DateTime?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }

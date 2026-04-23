@@ -3,6 +3,8 @@ import Link from 'next/link';
 
 import { prisma } from '@/db/client';
 import { EditProfileForm } from '@/components/profile/edit-profile-form';
+import { initialsFromDisplayLabel } from '@/lib/profile-initials';
+import { profileImageUrl } from '@/lib/profile-image-url';
 import { requireUser } from '@/server/auth/require-user';
 
 export const metadata: Metadata = {
@@ -21,6 +23,15 @@ export default async function ProfileSettingsPage() {
   const profile = await prisma.profile.findUniqueOrThrow({
     where: { userId: user.id },
   });
+
+  const initialProfileImageSrc =
+    profile.profileImageKey && profile.profileImageUpdatedAt
+      ? profileImageUrl(user.id, profile.profileImageUpdatedAt.getTime())
+      : null;
+
+  const previewInitials = initialsFromDisplayLabel(
+    profile.displayName?.trim() || `Collector ${user.id.slice(0, 8)}`
+  );
 
   return (
     <div className="flex flex-col gap-6">
@@ -48,6 +59,8 @@ export default async function ProfileSettingsPage() {
         initialBio={profile.bio}
         initialVibe={profile.vibe}
         initialCollectionPublic={profile.collectionPublic}
+        initialProfileImageSrc={initialProfileImageSrc}
+        previewInitials={previewInitials}
       />
     </div>
   );
