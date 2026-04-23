@@ -70,8 +70,7 @@ function createPrismaClient(): PrismaClient {
 
   const poolUrl = normalizeDatabaseUrlForPgPool(connectionString);
 
-  const pool =
-    globalForPrisma.pgPool ?? createPgPool(poolUrl);
+  const pool = globalForPrisma.pgPool ?? createPgPool(poolUrl);
   globalForPrisma.pgPool = pool;
 
   const adapter = new PrismaPg(pool);

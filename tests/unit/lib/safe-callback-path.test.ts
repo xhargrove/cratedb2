@@ -8,9 +8,9 @@ describe('parseDashboardCallbackPath', () => {
     expect(parseDashboardCallbackPath('/dashboard/containers/abc')).toBe(
       '/dashboard/containers/abc'
     );
-    expect(
-      parseDashboardCallbackPath('/dashboard/containers/abc?q=1')
-    ).toBe('/dashboard/containers/abc?q=1');
+    expect(parseDashboardCallbackPath('/dashboard/containers/abc?q=1')).toBe(
+      '/dashboard/containers/abc?q=1'
+    );
   });
 
   it('accepts search query values that contain ://', () => {

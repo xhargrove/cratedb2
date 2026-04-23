@@ -44,7 +44,9 @@ function isNotFoundError(error: unknown): boolean {
   return false;
 }
 
-export function createS3ArtworkStore(config: S3ArtworkStoreConfig): ArtworkStore {
+export function createS3ArtworkStore(
+  config: S3ArtworkStoreConfig
+): ArtworkStore {
   const client = new S3Client({
     region: config.region,
     endpoint: config.endpoint || undefined,
@@ -82,7 +84,8 @@ export function createS3ArtworkStore(config: S3ArtworkStoreConfig): ArtworkStore
         const buffer = await streamToBuffer(out.Body);
         return {
           buffer,
-          mimeType: (out.ContentType as AllowedArtworkMimeType | undefined) ?? null,
+          mimeType:
+            (out.ContentType as AllowedArtworkMimeType | undefined) ?? null,
         };
       } catch (error) {
         if (isNotFoundError(error)) return null;
@@ -120,4 +123,3 @@ export function createS3ArtworkStore(config: S3ArtworkStoreConfig): ArtworkStore
     },
   };
 }
-

@@ -59,8 +59,18 @@ export default async function ContainerDetailPage({ params }: Props) {
   const count = result.total;
 
   const capParts = [
-    capNote('Albums', result.recordTotal, result.records.length, result.recordsCapped),
-    capNote('45s', result.singleTotal, result.singles.length, result.singlesCapped),
+    capNote(
+      'Albums',
+      result.recordTotal,
+      result.records.length,
+      result.recordsCapped
+    ),
+    capNote(
+      '45s',
+      result.singleTotal,
+      result.singles.length,
+      result.singlesCapped
+    ),
     capNote(
       '12-inch',
       result.twelveInchTotal,
@@ -146,7 +156,8 @@ export default async function ContainerDetailPage({ params }: Props) {
               const art = recordArtworkUrl(
                 rec.id,
                 Boolean(rec.artworkKey),
-                rec.artworkUpdatedAt
+                rec.artworkUpdatedAt,
+                'thumb'
               );
               return (
                 <li
@@ -175,7 +186,9 @@ export default async function ContainerDetailPage({ params }: Props) {
                       {rec.artist} — {rec.title}
                     </Link>
                     {rec.year != null ? (
-                      <span className="ml-2 text-xs text-zinc-500">({rec.year})</span>
+                      <span className="ml-2 text-xs text-zinc-500">
+                        ({rec.year})
+                      </span>
                     ) : null}
                     {rec.quantity > 1 ? (
                       <span className="ml-2 text-xs text-zinc-500">
@@ -204,7 +217,8 @@ export default async function ContainerDetailPage({ params }: Props) {
               const art = singleArtworkUrl(
                 s.id,
                 Boolean(s.artworkKey),
-                s.artworkUpdatedAt
+                s.artworkUpdatedAt,
+                'thumb'
               );
               return (
                 <li
@@ -238,7 +252,9 @@ export default async function ContainerDetailPage({ params }: Props) {
                       </span>
                     ) : null}
                     {s.year != null ? (
-                      <span className="ml-2 text-xs text-zinc-500">({s.year})</span>
+                      <span className="ml-2 text-xs text-zinc-500">
+                        ({s.year})
+                      </span>
                     ) : null}
                     {s.quantity > 1 ? (
                       <span className="ml-2 text-xs text-zinc-500">
@@ -267,7 +283,8 @@ export default async function ContainerDetailPage({ params }: Props) {
               const art = twelveInchArtworkUrl(
                 t.id,
                 Boolean(t.artworkKey),
-                t.artworkUpdatedAt
+                t.artworkUpdatedAt,
+                'thumb'
               );
               return (
                 <li
@@ -301,7 +318,9 @@ export default async function ContainerDetailPage({ params }: Props) {
                       </span>
                     ) : null}
                     {t.year != null ? (
-                      <span className="ml-2 text-xs text-zinc-500">({t.year})</span>
+                      <span className="ml-2 text-xs text-zinc-500">
+                        ({t.year})
+                      </span>
                     ) : null}
                     {t.quantity > 1 ? (
                       <span className="ml-2 text-xs text-zinc-500">

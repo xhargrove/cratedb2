@@ -29,7 +29,8 @@ export default async function TwelveInchDetailPage({ params }: Props) {
   const artworkSrc = twelveInchArtworkUrl(
     row.id,
     Boolean(row.artworkKey),
-    row.artworkUpdatedAt
+    row.artworkUpdatedAt,
+    'medium'
   );
 
   return (

@@ -4,9 +4,7 @@ const MAX_CALLBACK_LEN = 4096;
 const CALLBACK_URL_BASE = 'https://cratedb-callback.invalid';
 
 function isAllowedDashboardPathname(pathname: string): boolean {
-  return (
-    pathname === '/dashboard' || pathname.startsWith('/dashboard/')
-  );
+  return pathname === '/dashboard' || pathname.startsWith('/dashboard/');
 }
 
 /**

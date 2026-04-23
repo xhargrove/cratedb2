@@ -10,8 +10,11 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Surface to server logs when running on the server boundary; digest links to Next overlay.
-    console.error('[app/error]', error);
+    console.error('[app/error]', {
+      digest: error.digest,
+      name: error.name,
+      message: error.message,
+    });
   }, [error]);
 
   return (

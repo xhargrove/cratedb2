@@ -15,7 +15,8 @@ export function RecordCard({ record, detailHref }: RecordCardProps) {
   const artworkSrc = recordArtworkUrl(
     record.id,
     Boolean(record.artworkKey),
-    record.artworkUpdatedAt
+    record.artworkUpdatedAt,
+    'thumb'
   );
 
   const inner = (

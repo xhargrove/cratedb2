@@ -11,12 +11,14 @@ export function ContainerQrPanel({
   pngDataUrl: string;
   containerName: string;
 }) {
-  const safeName = containerName.replace(/[^\w\-]+/g, '-').slice(0, 60) || 'container';
+  const safeName =
+    containerName.replace(/[^\w\-]+/g, '-').slice(0, 60) || 'container';
 
   const printLabel = useCallback(() => {
     const w = window.open('', '_blank', 'width=420,height=520');
     if (!w) return;
-    w.document.write(`<!DOCTYPE html><html><head><title>Print — ${containerName}</title>
+    w.document
+      .write(`<!DOCTYPE html><html><head><title>Print — ${containerName}</title>
       <style>
         body { font-family: system-ui,sans-serif; padding: 24px; text-align: center; }
         img { max-width: 280px; height: auto; }
@@ -36,8 +38,9 @@ export function ContainerQrPanel({
         QR code
       </h2>
       <p className="text-xs text-zinc-600 dark:text-zinc-400">
-        Scanning opens this page with live contents after you sign in (you&apos;ll
-        land back here). Only the link is encoded — not your inventory data.
+        Scanning opens this page with live contents after you sign in
+        (you&apos;ll land back here). Only the link is encoded — not your
+        inventory data.
       </p>
       {/* eslint-disable-next-line @next/next/no-img-element -- data URL from server */}
       <img

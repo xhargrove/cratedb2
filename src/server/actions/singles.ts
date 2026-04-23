@@ -11,13 +11,11 @@ import {
 } from '@/lib/validations/artwork';
 import { parseSingleForm, parseSingleId } from '@/lib/validations/single';
 import { requireUser } from '@/server/auth/require-user';
+import { singleArtworkRelativeKey } from '@/server/storage/artwork-keys';
 import {
-  singleArtworkRelativeKey,
-} from '@/server/storage/artwork-keys';
-import {
-  deleteArtworkObject,
-  writeArtworkObject,
-} from '@/server/storage/artwork-store';
+  deleteArtworkBundle,
+  writeArtworkBundle,
+} from '@/server/storage/artwork-bundle';
 import { getSpotifyIntegrationConfig } from '@/server/spotify/config';
 import { fetchSpotifyTrackCoverBuffer } from '@/server/spotify/fetch-album-cover';
 import { revalidatePhysicalSlotPagesFromRow } from '@/server/records/revalidate-physical-slot-pages';
@@ -54,7 +52,7 @@ async function persistArtworkForSingle(args: {
     args.pending.mimeType
   );
 
-  await writeArtworkObject(key, args.pending.buffer, args.pending.mimeType);
+  await writeArtworkBundle(key, args.pending.buffer, args.pending.mimeType);
 
   await prisma.collectionSingle.updateMany({
     where: { id: args.singleId, ownerId: args.ownerId },
@@ -66,7 +64,7 @@ async function persistArtworkForSingle(args: {
   });
 
   if (args.prevKey && args.prevKey !== key) {
-    await deleteArtworkObject(args.prevKey);
+    await deleteArtworkBundle(args.prevKey);
   }
 
   return { ok: true as const };
@@ -127,7 +125,7 @@ export async function createSingleAction(
           cover.mimeType
         );
         try {
-          await writeArtworkObject(key, cover.buffer, cover.mimeType);
+          await writeArtworkBundle(key, cover.buffer, cover.mimeType);
           await prisma.collectionSingle.update({
             where: { id: single.id },
             data: {
@@ -141,7 +139,7 @@ export async function createSingleAction(
             { err: e, singleId: single.id },
             'createSingle Spotify sleeve art failed — single saved without artwork'
           );
-          await deleteArtworkObject(key).catch(() => {});
+          await deleteArtworkBundle(key).catch(() => {});
         }
       }
     }
@@ -207,7 +205,7 @@ export async function updateSingleAction(
           artworkUpdatedAt: null,
         },
       });
-      if (prevKey) await deleteArtworkObject(prevKey);
+      if (prevKey) await deleteArtworkBundle(prevKey);
     } else if (artworkParsed.kind === 'present') {
       await persistArtworkForSingle({
         pending: artworkParsed,

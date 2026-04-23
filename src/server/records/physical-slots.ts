@@ -7,10 +7,7 @@ import {
   type PhysicalStorageSlot,
 } from '@/lib/physical-storage-slot';
 import { prisma } from '@/db/client';
-import type {
-  PhysicalStorageKind,
-  Prisma,
-} from '@/generated/prisma/client';
+import type { PhysicalStorageKind, Prisma } from '@/generated/prisma/client';
 
 export type PhysicalSlotSummary = {
   slotKey: string;
@@ -152,62 +149,56 @@ export async function listRecordsForPhysicalSlot(
   const whereTwelve =
     baseWhere as unknown as Prisma.CollectionTwelveInchSingleWhereInput;
 
-  const [
-    recordTotal,
-    singleTotal,
-    twelveTotal,
-    records,
-    singles,
-    twelveInch,
-  ] = await Promise.all([
-    prisma.collectionRecord.count({ where: whereRecord }),
-    prisma.collectionSingle.count({ where: whereSingle }),
-    prisma.collectionTwelveInchSingle.count({ where: whereTwelve }),
-    prisma.collectionRecord.findMany({
-      where: whereRecord,
-      orderBy: [{ artist: 'asc' }, { title: 'asc' }],
-      take: COLLECTION_LIST_MAX,
-      select: {
-        id: true,
-        artist: true,
-        title: true,
-        year: true,
-        quantity: true,
-        artworkKey: true,
-        artworkUpdatedAt: true,
-      },
-    }),
-    prisma.collectionSingle.findMany({
-      where: whereSingle,
-      orderBy: [{ artist: 'asc' }, { title: 'asc' }],
-      take: COLLECTION_LIST_MAX,
-      select: {
-        id: true,
-        artist: true,
-        title: true,
-        bSideTitle: true,
-        year: true,
-        quantity: true,
-        artworkKey: true,
-        artworkUpdatedAt: true,
-      },
-    }),
-    prisma.collectionTwelveInchSingle.findMany({
-      where: whereTwelve,
-      orderBy: [{ artist: 'asc' }, { title: 'asc' }],
-      take: COLLECTION_LIST_MAX,
-      select: {
-        id: true,
-        artist: true,
-        title: true,
-        bSideTitle: true,
-        year: true,
-        quantity: true,
-        artworkKey: true,
-        artworkUpdatedAt: true,
-      },
-    }),
-  ]);
+  const [recordTotal, singleTotal, twelveTotal, records, singles, twelveInch] =
+    await Promise.all([
+      prisma.collectionRecord.count({ where: whereRecord }),
+      prisma.collectionSingle.count({ where: whereSingle }),
+      prisma.collectionTwelveInchSingle.count({ where: whereTwelve }),
+      prisma.collectionRecord.findMany({
+        where: whereRecord,
+        orderBy: [{ artist: 'asc' }, { title: 'asc' }],
+        take: COLLECTION_LIST_MAX,
+        select: {
+          id: true,
+          artist: true,
+          title: true,
+          year: true,
+          quantity: true,
+          artworkKey: true,
+          artworkUpdatedAt: true,
+        },
+      }),
+      prisma.collectionSingle.findMany({
+        where: whereSingle,
+        orderBy: [{ artist: 'asc' }, { title: 'asc' }],
+        take: COLLECTION_LIST_MAX,
+        select: {
+          id: true,
+          artist: true,
+          title: true,
+          bSideTitle: true,
+          year: true,
+          quantity: true,
+          artworkKey: true,
+          artworkUpdatedAt: true,
+        },
+      }),
+      prisma.collectionTwelveInchSingle.findMany({
+        where: whereTwelve,
+        orderBy: [{ artist: 'asc' }, { title: 'asc' }],
+        take: COLLECTION_LIST_MAX,
+        select: {
+          id: true,
+          artist: true,
+          title: true,
+          bSideTitle: true,
+          year: true,
+          quantity: true,
+          artworkKey: true,
+          artworkUpdatedAt: true,
+        },
+      }),
+    ]);
 
   const total = recordTotal + singleTotal + twelveTotal;
   const recordsCapped = recordTotal > COLLECTION_LIST_MAX;

@@ -30,23 +30,11 @@ export function getServerEnv(): ServerEnv {
     const msg = parsed.error.flatten().fieldErrors;
     throw new Error(`Invalid server environment: ${JSON.stringify(msg)}`);
   }
-  if (parsed.data.ARTWORK_STORAGE_BACKEND === 's3') {
-    const requiredForS3 = [
-      'S3_BUCKET',
-      'S3_REGION',
-      'S3_ACCESS_KEY_ID',
-      'S3_SECRET_ACCESS_KEY',
-    ] as const;
-    const missing = requiredForS3.filter((k) => {
-      const value = parsed.data[k];
-      return !value || value.trim().length === 0;
-    });
-    if (missing.length > 0) {
-      throw new Error(
-        `Invalid server environment: missing required S3 vars for ARTWORK_STORAGE_BACKEND=s3: ${missing.join(', ')}`
-      );
-    }
-  }
+  /**
+   * Do not validate S3 credentials here: `instrumentation.ts` calls `getServerEnv()`
+   * on cold start. Misconfigured S3 must not take down unrelated routes (e.g. `/login`).
+   * `src/server/storage/artwork-store.ts` enforces required S3 vars when artwork I/O runs.
+   */
   cachedEnv = parsed.data;
   return parsed.data;
 }

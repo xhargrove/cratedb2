@@ -29,7 +29,8 @@ export function RecordList({ records }: { records: RecordDisplayRow[] }) {
             const artworkSrc = recordArtworkUrl(
               r.id,
               Boolean(r.artworkKey),
-              r.artworkUpdatedAt
+              r.artworkUpdatedAt,
+              'thumb'
             );
             return (
               <tr

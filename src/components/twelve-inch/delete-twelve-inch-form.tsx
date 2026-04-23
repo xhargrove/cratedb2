@@ -1,6 +1,10 @@
 import { deleteTwelveInchAction } from '@/server/actions/twelve-inch-singles';
 
-export function DeleteTwelveInchForm({ twelveInchId }: { twelveInchId: string }) {
+export function DeleteTwelveInchForm({
+  twelveInchId,
+}: {
+  twelveInchId: string;
+}) {
   return (
     <form action={deleteTwelveInchAction} className="inline">
       <input type="hidden" name="id" value={twelveInchId} />

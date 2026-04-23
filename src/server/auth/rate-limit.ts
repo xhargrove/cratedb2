@@ -65,7 +65,9 @@ async function getRequestFingerprint(): Promise<string> {
   return `${ip}|${userAgent}`;
 }
 
-export async function enforceLoginRateLimit(email: string): Promise<RateLimitResult> {
+export async function enforceLoginRateLimit(
+  email: string
+): Promise<RateLimitResult> {
   const fingerprint = await getRequestFingerprint();
   return applyWindowedLimit(
     `login|${fingerprint}|${normalizeIdentity(email)}`,
@@ -73,11 +75,12 @@ export async function enforceLoginRateLimit(email: string): Promise<RateLimitRes
   );
 }
 
-export async function enforceSignupRateLimit(email: string): Promise<RateLimitResult> {
+export async function enforceSignupRateLimit(
+  email: string
+): Promise<RateLimitResult> {
   const fingerprint = await getRequestFingerprint();
   return applyWindowedLimit(
     `signup|${fingerprint}|${normalizeIdentity(email)}`,
     MAX_SIGNUP_ATTEMPTS
   );
 }
-

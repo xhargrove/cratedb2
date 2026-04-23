@@ -21,8 +21,8 @@ function canShareFile(file: File): boolean {
   try {
     return Boolean(
       typeof navigator !== 'undefined' &&
-        navigator.canShare &&
-        navigator.canShare({ files: [file] })
+      navigator.canShare &&
+      navigator.canShare({ files: [file] })
     );
   } catch {
     return false;
@@ -89,7 +89,9 @@ export function ExportShareBar({ apiBase, filePrefix }: Props) {
 
         triggerDownload(blob, filename);
         if (!navigator.share) {
-          setHint('Downloaded — on mobile, open the file from Downloads and use Share.');
+          setHint(
+            'Downloaded — on mobile, open the file from Downloads and use Share.'
+          );
         } else {
           setHint(
             'Downloaded — this environment cannot open the system share sheet for files; use your device Share menu on the saved file.'

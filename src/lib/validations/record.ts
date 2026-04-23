@@ -20,11 +20,14 @@ const yearField = z.preprocess((val) => {
   return Number.isFinite(n) ? n : NaN;
 }, z.number().int().min(1900).max(2100).optional());
 
-const quantityField = z.preprocess((val) => {
-  if (val === '' || val === undefined || val === null) return 1;
-  const n = Number(val);
-  return Number.isFinite(n) ? n : NaN;
-}, z.number().int().min(1, 'At least 1 copy').max(999, 'At most 999 copies'));
+const quantityField = z.preprocess(
+  (val) => {
+    if (val === '' || val === undefined || val === null) return 1;
+    const n = Number(val);
+    return Number.isFinite(n) ? n : NaN;
+  },
+  z.number().int().min(1, 'At least 1 copy').max(999, 'At most 999 copies')
+);
 
 /** Core album fields — storage comes from {@link rawStorageAssignmentSchema}. */
 export const recordBaseFieldsSchema = z.object({

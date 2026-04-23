@@ -9,7 +9,8 @@ export function TwelveInchCard({ row }: { row: TwelveInchDisplayRow }) {
   const artworkSrc = twelveInchArtworkUrl(
     row.id,
     Boolean(row.artworkKey),
-    row.artworkUpdatedAt
+    row.artworkUpdatedAt,
+    'thumb'
   );
 
   return (

@@ -7,7 +7,9 @@ import {
 
 describe('container URL helpers', () => {
   it('uses stable dashboard path with id only', () => {
-    expect(containerDashboardPath('cont_1')).toBe('/dashboard/containers/cont_1');
+    expect(containerDashboardPath('cont_1')).toBe(
+      '/dashboard/containers/cont_1'
+    );
   });
 
   it('builds absolute scan URL without embedding inventory', () => {

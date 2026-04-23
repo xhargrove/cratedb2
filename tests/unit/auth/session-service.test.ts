@@ -22,6 +22,7 @@ import {
   createSession,
   destroySession,
   getUserForSessionToken,
+  resolveSessionForToken,
 } from '@/server/auth/session-service';
 
 describe('session-service', () => {
@@ -124,5 +125,22 @@ describe('session-service', () => {
     expect(prisma.session.delete).toHaveBeenCalledWith({
       where: { id: 'sid' },
     });
+  });
+
+  it('resolveSessionForToken returns transient_backend_error after retries exhausted', async () => {
+    vi.mocked(prisma.session.findUnique).mockRejectedValue(
+      new Error('timeout exceeded when trying to connect')
+    );
+
+    const r = await resolveSessionForToken('sess1');
+    expect(r).toEqual({ outcome: 'transient_backend_error' });
+    expect(prisma.session.findUnique).toHaveBeenCalledTimes(5);
+  });
+
+  it('resolveSessionForToken returns not_found when session row missing', async () => {
+    vi.mocked(prisma.session.findUnique).mockResolvedValue(null);
+
+    const r = await resolveSessionForToken('sess1');
+    expect(r).toEqual({ outcome: 'not_found' });
   });
 });

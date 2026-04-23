@@ -48,12 +48,7 @@ const boxWire = z
     v: z.literal(1),
     k: z.literal('BOX'),
     bn: z.number().int().min(1).max(STORAGE_BOX_NUMBER_MAX).optional(),
-    bcl: z
-      .string()
-      .trim()
-      .min(1)
-      .max(STORAGE_BOX_CUSTOM_LABEL_MAX)
-      .optional(),
+    bcl: z.string().trim().min(1).max(STORAGE_BOX_CUSTOM_LABEL_MAX).optional(),
   })
   .superRefine((data, ctx) => {
     const hasBcl = Boolean(data.bcl?.trim());
@@ -120,8 +115,7 @@ function slotToWire(slot: PhysicalStorageSlot): Wire | null {
     case 'BOX': {
       const bcl = slot.boxCustomLabel?.trim();
       if (bcl) return { v: 1, k: 'BOX', bcl };
-      if (slot.boxNumber != null)
-        return { v: 1, k: 'BOX', bn: slot.boxNumber };
+      if (slot.boxNumber != null) return { v: 1, k: 'BOX', bn: slot.boxNumber };
       return null;
     }
     default:
@@ -202,7 +196,9 @@ export function encodePhysicalSlotKey(slot: PhysicalStorageSlot): string {
 }
 
 /** Returns `null` if the segment is missing, malformed, or out of range. */
-export function decodePhysicalSlotKey(segment: string): PhysicalStorageSlot | null {
+export function decodePhysicalSlotKey(
+  segment: string
+): PhysicalStorageSlot | null {
   if (!segment || segment.length > 512) return null;
   try {
     const json = Buffer.from(segment, 'base64url').toString('utf8');

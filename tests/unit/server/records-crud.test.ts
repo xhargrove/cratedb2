@@ -21,9 +21,7 @@ vi.mock('@/db/client', () => ({
 
 vi.mock('@/server/storage/artwork-store', async (importOriginal) => {
   const mod =
-    await importOriginal<
-      typeof import('@/server/storage/artwork-store')
-    >();
+    await importOriginal<typeof import('@/server/storage/artwork-store')>();
   return {
     ...mod,
     deleteArtworkObject: artworkStorageMocks.deleteArtworkObject,

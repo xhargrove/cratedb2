@@ -156,7 +156,12 @@ async function main() {
       if (!mimeType) {
         failed += 1;
         logger.error(
-          { table: row.table, id: row.id, key: row.key, mimeType: row.mimeType },
+          {
+            table: row.table,
+            id: row.id,
+            key: row.key,
+            mimeType: row.mimeType,
+          },
           'invalid mime type for artwork migration row'
         );
         continue;
@@ -197,4 +202,3 @@ async function main() {
 main().finally(async () => {
   await prisma.$disconnect().catch(() => {});
 });
-

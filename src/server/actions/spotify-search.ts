@@ -1,7 +1,7 @@
 'use server';
 
 import { logger } from '@/lib/logger';
-import { requireUser } from '@/server/auth/require-user';
+import { requireUserForServerAction } from '@/server/auth/action-auth-gate';
 import { getSpotifyIntegrationConfig } from '@/server/spotify/config';
 import { searchSpotifyAlbums } from '@/server/spotify/search-albums';
 import { searchSpotifyTracks } from '@/server/spotify/search-tracks';
@@ -24,7 +24,8 @@ export async function searchSpotifyAlbumsAction(
   _prev: SpotifySearchState,
   formData: FormData
 ): Promise<SpotifySearchState> {
-  await requireUser();
+  const auth = await requireUserForServerAction();
+  if (!auth.ok) return { error: auth.error };
 
   const cfg = getSpotifyIntegrationConfig();
   if (!cfg.enabled) {
@@ -53,7 +54,8 @@ export async function searchSpotifyTracksAction(
   _prev: SpotifyTrackSearchState,
   formData: FormData
 ): Promise<SpotifyTrackSearchState> {
-  await requireUser();
+  const auth = await requireUserForServerAction();
+  if (!auth.ok) return { error: auth.error };
 
   const cfg = getSpotifyIntegrationConfig();
   if (!cfg.enabled) {

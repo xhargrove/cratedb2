@@ -73,8 +73,8 @@ export function TwelveInchFormFields({
                 height={96}
               />
               <p className="text-xs text-zinc-600 dark:text-zinc-400">
-                Art from Spotify release. It will be saved when you submit if you
-                leave the file upload empty.
+                Art from Spotify release. It will be saved when you submit if
+                you leave the file upload empty.
               </p>
             </div>
           ) : null}

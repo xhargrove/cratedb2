@@ -85,7 +85,6 @@ describe('parseRecordForm', () => {
       expect(r.data.storageLocation).toBe('Shelf · Row 2 · Column 3');
     }
   });
-
 });
 
 function addStorageNone(fd: FormData) {

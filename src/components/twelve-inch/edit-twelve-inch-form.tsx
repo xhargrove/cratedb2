@@ -38,7 +38,8 @@ export function EditTwelveInchForm({ row }: { row: Row }) {
   const artworkPreviewUrl = twelveInchArtworkUrl(
     row.id,
     Boolean(row.artworkKey),
-    row.artworkUpdatedAt
+    row.artworkUpdatedAt,
+    'medium'
   );
 
   return (

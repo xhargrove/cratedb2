@@ -7,9 +7,7 @@ import { parseArtworkFileUpload } from '@/lib/validations/artwork';
 import { parseProfileUpdateForm } from '@/lib/validations/profile';
 import { logger } from '@/lib/logger';
 import { requireUser } from '@/server/auth/require-user';
-import {
-  profileImageRelativeKey,
-} from '@/server/storage/artwork-keys';
+import { profileImageRelativeKey } from '@/server/storage/artwork-keys';
 import {
   deleteArtworkObject,
   writeArtworkObject,

@@ -16,13 +16,13 @@ npm run format:check && npm run lint && npm run typecheck && npm run test && npm
 
 _(Same checks as `npm run check`; run after edits and before release.)_
 
-| Step                       | Result (last full gate)             |
-| -------------------------- | ----------------------------------- |
-| **`npm run format:check`** | **Pass** — all files Prettier-clean |
-| **`npm run lint`**         | **Pass** — no ESLint issues         |
-| **`npm run typecheck`**    | **Pass** — `tsc --noEmit`           |
-| **`npm run test`**         | **Pass** — 35 files, 133 tests      |
-| **`npm run build`**        | **Pass** — Next.js production build |
+| Step                       | Result (last full gate)                           |
+| -------------------------- | ------------------------------------------------- |
+| **`npm run format:check`** | **Pass** — all files Prettier-clean               |
+| **`npm run lint`**         | **Pass** — no ESLint issues                       |
+| **`npm run typecheck`**    | **Pass** — `tsc --noEmit`                         |
+| **`npm run test`**         | **Pass** — 51 files, **188** tests (`vitest run`) |
+| **`npm run build`**        | **Pass** — Next.js production build               |
 
 ---
 
@@ -38,7 +38,7 @@ _(Same checks as `npm run check`; run after edits and before release.)_
 ## 2. Routes (inventory)
 
 | Route                                                                                 | Purpose                                                                                        |
-| ------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| ------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | ------ | --------------------------- |
 | `/`                                                                                   | Landing                                                                                        |
 | `/login`, `/signup`                                                                   | Auth                                                                                           |
 | `/dashboard`                                                                          | Hub                                                                                            |
@@ -48,8 +48,9 @@ _(Same checks as `npm run check`; run after edits and before release.)_
 | `/dashboard/wantlist`, `/dashboard/wantlist/new`, `/dashboard/wantlist/[id]/edit`     | Wantlist                                                                                       |
 | `/dashboard/stats`                                                                    | Owner insights                                                                                 |
 | `/u/[id]`                                                                             | Public profile — **album rows only** when collection is public (singles not listed here today) |
-| `GET /api/records/[id]/artwork`                                                       | Artwork bytes (privacy rules apply)                                                            |
-| `GET /api/singles/[id]/artwork`                                                       | Single artwork bytes (same privacy rules)                                                      |
+| `GET /api/records/[id]/artwork`                                                       | Record artwork bytes — optional `?size=thumb                                                   | medium | full` (privacy rules apply) |
+| `GET /api/singles/[id]/artwork`                                                       | Single artwork bytes (same privacy rules; same `size` query)                                   |
+| `GET /api/twelve-inch/[id]/artwork`                                                   | 12-inch single artwork bytes (same privacy rules; same `size` query)                           |
 
 ---
 
@@ -77,7 +78,7 @@ _(Same checks as `npm run check`; run after edits and before release.)_
 | `LOG_LEVEL`                                                           | Optional                            | `src/lib/logger.ts`                                                                                      |
 | `PRISMA_QUERY_LOG`                                                    | Optional (`true` = SQL in dev logs) | `src/db/client.ts`                                                                                       |
 | `ARTWORK_STORAGE_BACKEND`                                             | Optional (`local` default)          | `src/lib/env.ts`, `src/server/storage/artwork-store.ts`                                                  |
-| `S3_BUCKET`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` | Required when backend=`s3`          | `src/lib/env.ts`, `src/server/storage/object-artwork-store.ts`                                           |
+| `S3_BUCKET`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`  | Required when backend=`s3`          | `src/lib/env.ts`, `src/server/storage/object-artwork-store.ts`                                           |
 | `S3_ENDPOINT`, `S3_FORCE_PATH_STYLE`                                  | Optional                            | `src/server/storage/object-artwork-store.ts`                                                             |
 | `ARTWORK_STORAGE_ROOT`                                                | Optional (`local` backend only)     | `src/server/storage/local-artwork-store.ts`                                                              |
 | `ENRICHMENT_ENABLED`, `MUSICBRAINZ_CONTACT`, `MUSICBRAINZ_USER_AGENT` | Enrichment optional                 | `src/server/enrichment/config.ts` — **fail closed** unless `ENRICHMENT_ENABLED=true` **and** contact set |
@@ -93,8 +94,9 @@ Canonical comments: **`.env.example`**.
 - **Canonical interface:** `ArtworkStore` abstraction (`src/server/storage/types.ts`) used by actions, delete services, and API routes.
 - **Primary backend:** S3-compatible object storage adapter (`src/server/storage/object-artwork-store.ts`).
 - **Fallback backend:** local adapter exists for dev/migration use behind same interface (`ARTWORK_STORAGE_BACKEND=local`).
-- **Access control unchanged:** owner always allowed; non-owner artwork bytes only when `collectionPublic` allows.
-- **Migration path:** one-time script `npm run migrate:artwork:to-object` with `--dry-run` and idempotent skip behavior.
+- **Derivatives:** Upload/replace writes original plus WebP thumb/medium sidecars (Sharp, same access rules). UI list/grid uses `size=thumb`; detail/edit uses `size=medium`. Legacy rows without sidecars **fall back to the original** at read time (larger payloads until re-upload or a future backfill).
+- **Access control unchanged:** owner always allowed; non-owner artwork bytes only when `collectionPublic` allows. Cache headers remain private vs public by viewer; **`Vary: Cookie`** on artwork responses.
+- **Migration path:** one-time script `npm run migrate:artwork:to-object` with `--dry-run` and idempotent skip behavior (original objects only — derivatives are created on new uploads/replaces).
 
 ---
 
@@ -126,10 +128,10 @@ Residual: operational secrets handling, HTTPS in production, MusicBrainz etiquet
 
 ## 9. What is “ready” vs deferred
 
-| Ready within scope                                                    | Requires operator configuration                                                | Intentionally deferred                                                      |
-| --------------------------------------------------------------------- | ------------------------------------------------------------------------------ | --------------------------------------------------------------------------- |
-| Auth, collection, singles, wantlist, follows, stats, profile settings | Postgres URL, **`npm run db:deploy`**, HTTPS host, S3-compatible artwork envs | Public singles grid on `/u/[id]`, Discogs, import/export UX                 |
-| Optional Spotify / enrichment                                         | Env toggles                                                                    | Multi-region HA, advanced CDN edge image pipeline                            |
+| Ready within scope                                                    | Requires operator configuration                                               | Intentionally deferred                                      |
+| --------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| Auth, collection, singles, wantlist, follows, stats, profile settings | Postgres URL, **`npm run db:deploy`**, HTTPS host, S3-compatible artwork envs | Public singles grid on `/u/[id]`, Discogs, import/export UX |
+| Optional Spotify / enrichment                                         | Env toggles                                                                   | Multi-region HA, advanced CDN edge image pipeline           |
 
 **Bottom line:** Production-suitable for artwork when operators configure S3-compatible storage env correctly, run migrations, and use HTTPS. Local backend remains for development and migration support.
 

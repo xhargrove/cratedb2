@@ -16,4 +16,13 @@ describe('recordArtworkUrl', () => {
       '/api/records/abc/artwork?v=1000'
     );
   });
+
+  it('adds size query for non-full delivery', () => {
+    expect(recordArtworkUrl('abc', true, null, 'thumb')).toBe(
+      '/api/records/abc/artwork?size=thumb'
+    );
+    expect(recordArtworkUrl('abc', true, 1, 'medium')).toBe(
+      '/api/records/abc/artwork?v=1&size=medium'
+    );
+  });
 });

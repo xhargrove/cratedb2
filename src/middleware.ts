@@ -23,7 +23,7 @@ function applySecurityHeaders(
 
 /**
  * Fast path for anonymous users: no session cookie → skip loading `/dashboard`.
- * Full session validation (expiry, tampering, DB lookup) runs in Server Components via `requireUser` / `getCurrentUser`.
+ * Full session validation (expiry, tampering, DB lookup) runs in Server Components via `resolveAuth` / `requireUser`. Cookie presence here is only a fast gate.
  */
 export function middleware(request: NextRequest) {
   const hasCookie = Boolean(request.cookies.get(SESSION_COOKIE_NAME)?.value);

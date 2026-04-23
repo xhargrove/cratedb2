@@ -15,7 +15,7 @@ describe('getServerEnv', () => {
     expect(env.DATABASE_URL).toContain('postgresql://');
   });
 
-  it('requires s3 credentials when artwork backend is s3', async () => {
+  it('parses when s3 backend is set but credentials missing (validated at artwork store)', async () => {
     vi.stubEnv('DATABASE_URL', 'postgresql://u:p@localhost:5432/db');
     vi.stubEnv('ARTWORK_STORAGE_BACKEND', 's3');
     vi.stubEnv('S3_BUCKET', '');
@@ -24,8 +24,6 @@ describe('getServerEnv', () => {
     vi.stubEnv('S3_SECRET_ACCESS_KEY', '');
 
     const { getServerEnv } = await import('@/lib/env');
-    expect(() => getServerEnv()).toThrow(
-      /missing required S3 vars for ARTWORK_STORAGE_BACKEND=s3/
-    );
+    expect(getServerEnv().ARTWORK_STORAGE_BACKEND).toBe('s3');
   });
 });

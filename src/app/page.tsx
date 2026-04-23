@@ -1,9 +1,12 @@
 import Link from 'next/link';
 
-import { getCurrentUser } from '@/server/auth/get-current-user';
+import { getCurrentUserOrNullOnFailure } from '@/lib/safe-current-user';
+
+/** Uses cookies via session resolution — must not be statically prerendered. */
+export const dynamic = 'force-dynamic';
 
 export default async function Home() {
-  const user = await getCurrentUser();
+  const user = await getCurrentUserOrNullOnFailure();
 
   return (
     <div className="relative flex min-h-screen flex-col overflow-hidden bg-background text-foreground">

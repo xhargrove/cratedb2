@@ -29,7 +29,8 @@ export default async function SingleDetailPage({ params }: Props) {
   const artworkSrc = singleArtworkUrl(
     single.id,
     Boolean(single.artworkKey),
-    single.artworkUpdatedAt
+    single.artworkUpdatedAt,
+    'medium'
   );
 
   return (

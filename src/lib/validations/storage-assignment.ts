@@ -30,12 +30,15 @@ function optionalPositiveInt(max: number) {
   }, z.number().int().min(1).max(max).optional());
 }
 
-const storageKindField = z.preprocess((v) => {
-  if (v === '' || v === undefined || v === null) return 'NONE';
-  const s = String(v);
-  if (s === 'NONE' || s === 'SHELF' || s === 'CRATE' || s === 'BOX') return s;
-  return 'NONE';
-}, z.enum(['NONE', 'SHELF', 'CRATE', 'BOX']));
+const storageKindField = z.preprocess(
+  (v) => {
+    if (v === '' || v === undefined || v === null) return 'NONE';
+    const s = String(v);
+    if (s === 'NONE' || s === 'SHELF' || s === 'CRATE' || s === 'BOX') return s;
+    return 'NONE';
+  },
+  z.enum(['NONE', 'SHELF', 'CRATE', 'BOX'])
+);
 
 export const rawStorageAssignmentSchema = z
   .object({
@@ -95,11 +98,7 @@ export const rawStorageAssignmentSchema = z
         return;
       }
       const n = Number(preset);
-      if (
-        !Number.isInteger(n) ||
-        n < 1 ||
-        n > STORAGE_BOX_NUMBER_MAX
-      ) {
+      if (!Number.isInteger(n) || n < 1 || n > STORAGE_BOX_NUMBER_MAX) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: 'Choose a valid box number.',
@@ -174,7 +173,9 @@ export const rawStorageAssignmentSchema = z
     return out;
   });
 
-export type ParsedStorageAssignment = z.infer<typeof rawStorageAssignmentSchema>;
+export type ParsedStorageAssignment = z.infer<
+  typeof rawStorageAssignmentSchema
+>;
 
 export function extractStorageAssignmentRaw(formData: FormData) {
   return {

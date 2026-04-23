@@ -5,13 +5,11 @@ import { redirect } from 'next/navigation';
 
 import { prisma } from '@/db/client';
 import { logger } from '@/lib/logger';
+import { artworkRelativeKey } from '@/server/storage/artwork-keys';
 import {
-  artworkRelativeKey,
-} from '@/server/storage/artwork-keys';
-import {
-  deleteArtworkObject,
-  writeArtworkObject,
-} from '@/server/storage/artwork-store';
+  deleteArtworkBundle,
+  writeArtworkBundle,
+} from '@/server/storage/artwork-bundle';
 import { parseArtworkFileUpload } from '@/lib/validations/artwork';
 import { parseRecordForm, parseRecordId } from '@/lib/validations/record';
 import { requireUser } from '@/server/auth/require-user';
@@ -62,7 +60,11 @@ export async function createRecordAction(
   if (artworkParsed.kind === 'present') {
     const key = artworkRelativeKey(user.id, record.id, artworkParsed.mimeType);
     try {
-      await writeArtworkObject(key, artworkParsed.buffer, artworkParsed.mimeType);
+      await writeArtworkBundle(
+        key,
+        artworkParsed.buffer,
+        artworkParsed.mimeType
+      );
       await prisma.collectionRecord.update({
         where: { id: record.id },
         data: {
@@ -76,7 +78,7 @@ export async function createRecordAction(
         { err: e, recordId: record.id },
         'createRecord artwork failed'
       );
-      await deleteArtworkObject(key).catch(() => {});
+      await deleteArtworkBundle(key).catch(() => {});
       await prisma.collectionRecord
         .delete({ where: { id: record.id } })
         .catch(() => {});
@@ -95,7 +97,7 @@ export async function createRecordAction(
       if (cover) {
         const key = artworkRelativeKey(user.id, record.id, cover.mimeType);
         try {
-          await writeArtworkObject(key, cover.buffer, cover.mimeType);
+          await writeArtworkBundle(key, cover.buffer, cover.mimeType);
           await prisma.collectionRecord.update({
             where: { id: record.id },
             data: {
@@ -109,7 +111,7 @@ export async function createRecordAction(
             { err: e, recordId: record.id },
             'createRecord Spotify cover failed — record saved without artwork'
           );
-          await deleteArtworkObject(key).catch(() => {});
+          await deleteArtworkBundle(key).catch(() => {});
         }
       }
     }
@@ -182,7 +184,7 @@ export async function updateRecordAction(
         },
       });
       if (prevKey) {
-        await deleteArtworkObject(prevKey);
+        await deleteArtworkBundle(prevKey);
       }
     } else if (artworkParsed.kind === 'present') {
       const newKey = artworkRelativeKey(
@@ -191,7 +193,7 @@ export async function updateRecordAction(
         artworkParsed.mimeType
       );
       try {
-        await writeArtworkObject(
+        await writeArtworkBundle(
           newKey,
           artworkParsed.buffer,
           artworkParsed.mimeType
@@ -205,10 +207,10 @@ export async function updateRecordAction(
           },
         });
         if (existing.artworkKey && existing.artworkKey !== newKey) {
-          await deleteArtworkObject(existing.artworkKey);
+          await deleteArtworkBundle(existing.artworkKey);
         }
       } catch (inner) {
-        await deleteArtworkObject(newKey).catch(() => {});
+        await deleteArtworkBundle(newKey).catch(() => {});
         throw inner;
       }
     }
@@ -245,7 +247,7 @@ export async function updateRecordAction(
             );
             const prevKey = row.artworkKey;
             try {
-              await writeArtworkObject(newKey, cover.buffer, cover.mimeType);
+              await writeArtworkBundle(newKey, cover.buffer, cover.mimeType);
               await prisma.collectionRecord.updateMany({
                 where: { id: idParsed.id, ownerId: user.id },
                 data: {
@@ -255,10 +257,10 @@ export async function updateRecordAction(
                 },
               });
               if (prevKey && prevKey !== newKey) {
-                await deleteArtworkObject(prevKey);
+                await deleteArtworkBundle(prevKey);
               }
             } catch (inner) {
-              await deleteArtworkObject(newKey).catch(() => {});
+              await deleteArtworkBundle(newKey).catch(() => {});
               throw inner;
             }
           }

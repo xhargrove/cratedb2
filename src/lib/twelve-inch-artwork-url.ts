@@ -1,18 +1,22 @@
-/**
- * Browser URL for 12-inch single sleeve art (`GET /api/twelve-inch/[id]/artwork`).
- */
+import type { ArtworkDeliverySize } from '@/lib/artwork-delivery-size';
+
+/** Browser URL for 12-inch single sleeve art (`GET /api/twelve-inch/[id]/artwork`). */
 export function twelveInchArtworkUrl(
   twelveInchId: string,
   hasArtwork: boolean,
-  version?: bigint | number | string | Date | null
+  version?: bigint | number | string | Date | null,
+  size: ArtworkDeliverySize = 'full'
 ): string | null {
   if (!hasArtwork) return null;
-  let v: string | undefined;
+  const params = new URLSearchParams();
   if (version instanceof Date) {
-    v = String(version.getTime());
+    params.set('v', String(version.getTime()));
   } else if (version !== undefined && version !== null && version !== '') {
-    v = String(version);
+    params.set('v', String(version));
   }
-  const q = v !== undefined ? `?v=${encodeURIComponent(v)}` : '';
-  return `/api/twelve-inch/${twelveInchId}/artwork${q}`;
+  if (size !== 'full') {
+    params.set('size', size);
+  }
+  const q = params.toString();
+  return `/api/twelve-inch/${twelveInchId}/artwork${q ? `?${q}` : ''}`;
 }

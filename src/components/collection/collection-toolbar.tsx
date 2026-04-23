@@ -34,7 +34,12 @@ export function CollectionToolbar({
 
   return (
     <div className="flex flex-col gap-4 rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-      <form method="GET" action={base} className="flex flex-col gap-4">
+      <form
+        key={serializeCollectionParams(state)}
+        method="GET"
+        action={base}
+        className="flex flex-col gap-4"
+      >
         <input type="hidden" name="view" value={state.view} />
 
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-end">

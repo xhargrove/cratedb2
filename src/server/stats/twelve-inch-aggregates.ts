@@ -24,7 +24,9 @@ export async function countDistinctTwelveInchArtistsForOwner(
   return Number(rows[0]?.count ?? 0);
 }
 
-export async function twelveInchArtworkCountsForOwner(ownerId: string): Promise<{
+export async function twelveInchArtworkCountsForOwner(
+  ownerId: string
+): Promise<{
   total: number;
   withArtwork: number;
 }> {

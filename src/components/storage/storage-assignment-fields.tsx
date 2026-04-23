@@ -62,8 +62,7 @@ export function StorageAssignmentFields({
   );
 
   const showLegacyHint =
-    kind === 'NONE' &&
-    Boolean(defaults?.legacyStorageLocation?.trim());
+    kind === 'NONE' && Boolean(defaults?.legacyStorageLocation?.trim());
 
   return (
     <div className="flex flex-col gap-2 rounded-md border border-zinc-200 p-3 dark:border-zinc-700">
@@ -76,9 +75,7 @@ export function StorageAssignmentFields({
         <select
           name="storageKind"
           value={kind}
-          onChange={(e) =>
-            setKind(e.target.value as PhysicalStorageKind)
-          }
+          onChange={(e) => setKind(e.target.value as PhysicalStorageKind)}
           className="rounded border border-zinc-300 px-2 py-1.5 text-sm dark:border-zinc-600 dark:bg-zinc-950"
         >
           {kindOptions.map((o) => (
@@ -92,9 +89,9 @@ export function StorageAssignmentFields({
       {showLegacyHint ? (
         <p className="text-xs text-amber-800 dark:text-amber-200">
           Saved text from before structured storage:{' '}
-          <span className="font-medium">{defaults!.legacyStorageLocation}</span>.
-          Pick Shelf, Crate, or Box above to replace it — saving with “Not set”
-          clears this text.
+          <span className="font-medium">{defaults!.legacyStorageLocation}</span>
+          . Pick Shelf, Crate, or Box above to replace it — saving with “Not
+          set” clears this text.
         </p>
       ) : null}
 

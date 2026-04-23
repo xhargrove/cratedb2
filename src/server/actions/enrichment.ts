@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 
 import { logger } from '@/lib/logger';
 import { parseRecordId } from '@/lib/validations/record';
-import { requireUser } from '@/server/auth/require-user';
+import { requireUserForServerAction } from '@/server/auth/action-auth-gate';
 import { getEnrichmentConfig } from '@/server/enrichment/config';
 import { metadataCandidateSchema } from '@/server/enrichment/candidate-schema';
 import {
@@ -32,7 +32,10 @@ export async function findMetadataCandidatesAction(
   _prev: FindMetadataState,
   formData: FormData
 ): Promise<FindMetadataState> {
-  const user = await requireUser();
+  const auth = await requireUserForServerAction();
+  if (!auth.ok) return { error: auth.error };
+  const user = auth.user;
+
   const idParsed = parseRecordId(formData.get('recordId'));
   if (!idParsed.ok) {
     return { error: idParsed.error };
@@ -71,7 +74,10 @@ export async function applyMetadataCandidateAction(
   _prev: ApplyMetadataState,
   formData: FormData
 ): Promise<ApplyMetadataState> {
-  const user = await requireUser();
+  const auth = await requireUserForServerAction();
+  if (!auth.ok) return { error: auth.error };
+  const user = auth.user;
+
   const idParsed = parseRecordId(formData.get('recordId'));
   if (!idParsed.ok) {
     return { error: idParsed.error };

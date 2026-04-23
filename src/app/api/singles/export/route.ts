@@ -5,7 +5,7 @@ import {
   formatSinglesAsTsv,
 } from '@/lib/export/singles-format';
 import { buildSinglesPdf } from '@/lib/export/singles-pdf';
-import { getCurrentUser } from '@/server/auth/get-current-user';
+import { resolveAuth } from '@/server/auth/get-current-user';
 import { listSinglesForExport } from '@/server/singles/list-for-export';
 
 const ALLOWED = new Set(['csv', 'txt', 'pdf']);
@@ -19,13 +19,20 @@ export async function GET(request: Request) {
     );
   }
 
-  const user = await getCurrentUser();
-  if (!user) {
+  const auth = await resolveAuth();
+  if (auth.status === 'backend_unavailable') {
+    return new NextResponse('Service unavailable', {
+      status: 503,
+      headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+    });
+  }
+  if (auth.status !== 'authenticated') {
     return new NextResponse('Unauthorized', {
       status: 401,
       headers: { 'Content-Type': 'text/plain; charset=utf-8' },
     });
   }
+  const user = auth.user;
 
   const { rows, totalInDatabase, capped } = await listSinglesForExport(user.id);
   const exportedAt = new Date();

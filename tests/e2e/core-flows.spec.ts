@@ -17,7 +17,7 @@ test.describe.serial('core browser flows', () => {
 
   test('dashboard auth gate redirects anonymous users', async ({ page }) => {
     await page.goto('/dashboard');
-    await expect(page).toHaveURL(/\/login$/);
+    await expect(page).toHaveURL(/\/login/);
   });
 
   test('signup, login, logout, create core entities, and load public pages', async ({
@@ -39,6 +39,12 @@ test.describe.serial('core browser flows', () => {
     await page.getByLabel('Password').fill(password);
     await page.getByRole('button', { name: 'Log in' }).click();
     await expect(page).toHaveURL(/\/dashboard$/);
+
+    await page.goto('/dashboard/records');
+    await expect(page).toHaveURL(/\/dashboard\/records$/);
+    await page.goto('/dashboard/singles');
+    await expect(page).toHaveURL(/\/dashboard\/singles$/);
+    await page.goto('/dashboard');
 
     await page.goto('/dashboard/records/new');
     await page.getByLabel('Artist').fill(recordArtist);
@@ -82,4 +88,3 @@ test.describe.serial('core browser flows', () => {
     ).toBeVisible();
   });
 });
-

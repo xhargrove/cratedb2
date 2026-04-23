@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect } from 'react';
+
 /**
  * Root-level error boundary — must define its own <html> / <body> (Next.js requirement).
  */
@@ -10,6 +12,14 @@ export default function GlobalError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  useEffect(() => {
+    console.error('[app/global-error]', {
+      digest: error.digest,
+      name: error.name,
+      message: error.message,
+    });
+  }, [error]);
+
   return (
     <html lang="en">
       <body className="flex min-h-screen flex-col items-center justify-center gap-4 bg-white px-6 text-center text-neutral-900 dark:bg-neutral-950 dark:text-neutral-100">

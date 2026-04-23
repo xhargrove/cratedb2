@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
-import { getCurrentUser } from '@/server/auth/get-current-user';
+import { getCurrentUserOrNullOnFailure } from '@/lib/safe-current-user';
 import { getFollowCounts, isFollowing } from '@/server/follows/follow-queries';
 import { getPublicUserSummary } from '@/server/public/get-public-user';
 import { listPublicCollectionForUser } from '@/server/records/list-public-collection';
@@ -32,123 +32,156 @@ type Props = {
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { id } = await params;
-  const user = await getPublicUserSummary(id);
-  return {
-    title: user ? `${user.displayLabel} · Cratedb` : 'Collector · Cratedb',
-  };
+  try {
+    const { id } = await params;
+    const user = await getPublicUserSummary(id);
+    return {
+      title: user ? `${user.displayLabel} · Cratedb` : 'Collector · Cratedb',
+    };
+  } catch {
+    return { title: 'Collector · Cratedb' };
+  }
 }
 
 export default async function PublicProfilePage({
   params,
   searchParams,
 }: Props) {
-  const { id } = await params;
-  const raw = await searchParams;
+  try {
+    const { id } = await params;
+    const raw = await searchParams;
 
-  const user = await getPublicUserSummary(id);
-  if (!user) {
-    notFound();
-  }
+    const user = await getPublicUserSummary(id);
+    if (!user) {
+      notFound();
+    }
 
-  const viewer = await getCurrentUser();
-  const [counts, collection] = await Promise.all([
-    getFollowCounts(id),
-    listPublicCollectionForUser(id),
-  ]);
+    const viewer = await getCurrentUserOrNullOnFailure();
+    const [counts, collection] = await Promise.all([
+      getFollowCounts(id),
+      listPublicCollectionForUser(id),
+    ]);
 
-  let following = false;
-  if (viewer && viewer.id !== id) {
-    following = await isFollowing(viewer.id, id);
-  }
+    let following = false;
+    if (viewer && viewer.id !== id) {
+      following = await isFollowing(viewer.id, id);
+    }
 
-  const followErrCode = firstParam(raw, 'followError');
-  const followErrMsg =
-    followErrCode !== undefined && followErrCode !== ''
-      ? (FOLLOW_ERROR_MESSAGES[followErrCode] ??
-        'Something went wrong while updating follow state.')
-      : undefined;
+    const followErrCode = firstParam(raw, 'followError');
+    const followErrMsg =
+      followErrCode !== undefined && followErrCode !== ''
+        ? (FOLLOW_ERROR_MESSAGES[followErrCode] ??
+          'Something went wrong while updating follow state.')
+        : undefined;
 
-  return (
-    <div className="mx-auto max-w-5xl px-4 py-10">
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+    return (
+      <div className="mx-auto max-w-5xl px-4 py-10">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+          <Link
+            href="/"
+            className="text-sm text-zinc-600 underline dark:text-zinc-400"
+          >
+            ← Home
+          </Link>
+          {viewer ? (
+            <Link
+              href="/dashboard"
+              className="text-sm text-zinc-600 underline dark:text-zinc-400"
+            >
+              Dashboard
+            </Link>
+          ) : (
+            <Link
+              href="/login"
+              className="text-sm text-zinc-600 underline dark:text-zinc-400"
+            >
+              Log in
+            </Link>
+          )}
+        </div>
+
+        <header className="space-y-6 border-b border-zinc-200 pb-8 dark:border-zinc-800">
+          <PublicProfileHeader
+            displayLabel={user.displayLabel}
+            vibeLabel={user.vibeLabel}
+            bio={user.bio}
+            profileImageSrc={user.profileImageSrc}
+          />
+          <div>
+            <p className="text-sm text-zinc-600 dark:text-zinc-400">
+              <span className="font-medium text-zinc-700 dark:text-zinc-300">
+                {counts.followers}
+              </span>{' '}
+              followers ·{' '}
+              <span className="font-medium text-zinc-700 dark:text-zinc-300">
+                {counts.following}
+              </span>{' '}
+              following
+            </p>
+            <div className="mt-4">
+              <ProfileFollowSection
+                targetUserId={id}
+                viewerId={viewer?.id ?? null}
+                isFollowing={following}
+              />
+            </div>
+            {followErrMsg ? (
+              <p
+                className="mt-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-900 dark:border-red-900 dark:bg-red-950/60 dark:text-red-100"
+                role="alert"
+              >
+                {followErrMsg}
+              </p>
+            ) : null}
+          </div>
+        </header>
+
+        <section className="mt-8">
+          <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+            Collection
+          </h2>
+          {!collection.visible ? (
+            <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
+              This collector has chosen to hide their collection.
+            </p>
+          ) : collection.records.length === 0 ? (
+            <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
+              No records to show yet.
+            </p>
+          ) : (
+            <div className="mt-4">
+              <PublicCollectionGrid records={collection.records} />
+            </div>
+          )}
+        </section>
+      </div>
+    );
+  } catch (err) {
+    const { logger } = await import('@/lib/logger');
+    const { serializeUnknownError } =
+      await import('@/lib/server-error-serialize');
+    logger.error(
+      {
+        boundary: 'public_profile_page',
+        ...serializeUnknownError(err),
+      },
+      'public profile render failed'
+    );
+    return (
+      <div className="mx-auto max-w-lg px-4 py-16 text-center">
+        <p className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+          Could not load this profile
+        </p>
+        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+          Try again in a moment. If this persists, the service may be updating.
+        </p>
         <Link
           href="/"
-          className="text-sm text-zinc-600 underline dark:text-zinc-400"
+          className="mt-6 inline-block text-sm text-amber-800 underline dark:text-amber-200"
         >
           ← Home
         </Link>
-        {viewer ? (
-          <Link
-            href="/dashboard"
-            className="text-sm text-zinc-600 underline dark:text-zinc-400"
-          >
-            Dashboard
-          </Link>
-        ) : (
-          <Link
-            href="/login"
-            className="text-sm text-zinc-600 underline dark:text-zinc-400"
-          >
-            Log in
-          </Link>
-        )}
       </div>
-
-      <header className="space-y-6 border-b border-zinc-200 pb-8 dark:border-zinc-800">
-        <PublicProfileHeader
-          displayLabel={user.displayLabel}
-          vibeLabel={user.vibeLabel}
-          bio={user.bio}
-          profileImageSrc={user.profileImageSrc}
-        />
-        <div>
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">
-            <span className="font-medium text-zinc-700 dark:text-zinc-300">
-              {counts.followers}
-            </span>{' '}
-            followers ·{' '}
-            <span className="font-medium text-zinc-700 dark:text-zinc-300">
-              {counts.following}
-            </span>{' '}
-            following
-          </p>
-          <div className="mt-4">
-            <ProfileFollowSection
-              targetUserId={id}
-              viewerId={viewer?.id ?? null}
-              isFollowing={following}
-            />
-          </div>
-          {followErrMsg ? (
-            <p
-              className="mt-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-900 dark:border-red-900 dark:bg-red-950/60 dark:text-red-100"
-              role="alert"
-            >
-              {followErrMsg}
-            </p>
-          ) : null}
-        </div>
-      </header>
-
-      <section className="mt-8">
-        <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-          Collection
-        </h2>
-        {!collection.visible ? (
-          <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
-            This collector has chosen to hide their collection.
-          </p>
-        ) : collection.records.length === 0 ? (
-          <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
-            No records to show yet.
-          </p>
-        ) : (
-          <div className="mt-4">
-            <PublicCollectionGrid records={collection.records} />
-          </div>
-        )}
-      </section>
-    </div>
-  );
+    );
+  }
 }

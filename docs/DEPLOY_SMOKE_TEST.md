@@ -20,7 +20,7 @@ Check off each step. If a step fails, note the URL, account used, and error (UI,
 | 11  | **Stats** — `/dashboard/stats` loads without error for the owner.                                                                                                                                                       | ☐    |
 | 12  | **Enrichment disabled** — with `ENRICHMENT_ENABLED` unset or not `true`, record edit shows enrichment unavailable (no crash). If enrichment is intentionally on in prod, skip or verify enabled path separately.        | ☐    |
 | 13  | **Spotify disabled** — with `SPOTIFY_CLIENT_ID` / `SPOTIFY_CLIENT_SECRET` unset, album/track search panels show unavailable (no crash). If Spotify is intentionally on in prod, skip or verify enabled path separately. | ☐    |
-| 14  | **Auth abuse resistance** — trigger repeated bad login attempts from one client and verify generic auth failure responses continue without leaking account existence.                                                       | ☐    |
+| 14  | **Auth abuse resistance** — trigger repeated bad login attempts from one client and verify generic auth failure responses continue without leaking account existence.                                                   | ☐    |
 
 ### Optional operational checks
 

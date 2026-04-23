@@ -70,12 +70,12 @@ describe('getOwnerInsights', () => {
     singlesDistinct: bigint,
     twelveInchDistinct: bigint
   ) {
-    vi.mocked(prisma.$queryRaw).mockImplementation((async (...args: unknown[]) => {
+    vi.mocked(prisma.$queryRaw).mockImplementation((async (
+      ...args: unknown[]
+    ) => {
       const parts = args[0];
       const sql =
-        typeof parts === 'object' &&
-        parts !== null &&
-        Symbol.iterator in parts
+        typeof parts === 'object' && parts !== null && Symbol.iterator in parts
           ? [...(parts as TemplateStringsArray)].join('')
           : '';
       if (sql.includes('collection_twelve_inch_singles')) {
@@ -185,10 +185,8 @@ describe('getOwnerInsights', () => {
       async (args: any) => {
         const top = Array.isArray(args.by) ? args.by[0] : args.by;
         const key = typeof top === 'string' ? top : undefined;
-        if (key === 'genre')
-          return [{ genre: 'Soul', _count: { _all: 2 } }];
-        if (key === 'artist')
-          return [{ artist: 'Diana', _count: { _all: 2 } }];
+        if (key === 'genre') return [{ genre: 'Soul', _count: { _all: 2 } }];
+        if (key === 'artist') return [{ artist: 'Diana', _count: { _all: 2 } }];
         if (key === 'year') return [{ year: 1972, _count: { _all: 2 } }];
         return [];
       }

@@ -35,7 +35,8 @@ export function EditSingleForm({ single }: { single: SingleRow }) {
   const artworkPreviewUrl = singleArtworkUrl(
     single.id,
     Boolean(single.artworkKey),
-    single.artworkUpdatedAt
+    single.artworkUpdatedAt,
+    'medium'
   );
 
   return (

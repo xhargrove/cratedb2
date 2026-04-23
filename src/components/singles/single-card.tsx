@@ -9,7 +9,8 @@ export function SingleCard({ single }: { single: SingleDisplayRow }) {
   const artworkSrc = singleArtworkUrl(
     single.id,
     Boolean(single.artworkKey),
-    single.artworkUpdatedAt
+    single.artworkUpdatedAt,
+    'thumb'
   );
 
   return (

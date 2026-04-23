@@ -71,4 +71,3 @@ export async function deleteArtworkObject(key: string) {
 export async function artworkObjectExists(key: string) {
   return getArtworkStore().objectExists(key);
 }
-

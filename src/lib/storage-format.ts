@@ -11,7 +11,9 @@ export type NormalizedPhysicalStorage = {
   storageLocation: string | null;
 };
 
-export function composeStorageLocation(n: NormalizedPhysicalStorage): string | null {
+export function composeStorageLocation(
+  n: NormalizedPhysicalStorage
+): string | null {
   switch (n.storageKind) {
     case 'NONE':
       return null;

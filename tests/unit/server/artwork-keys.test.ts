@@ -16,9 +16,9 @@ describe('artwork-keys', () => {
     expect(singleArtworkRelativeKey('owner1', 'single1', 'image/png')).toBe(
       'owner1/singles/single1.png'
     );
-    expect(
-      twelveInchArtworkRelativeKey('owner1', 'maxi1', 'image/webp')
-    ).toBe('owner1/twelve-inch/maxi1.webp');
+    expect(twelveInchArtworkRelativeKey('owner1', 'maxi1', 'image/webp')).toBe(
+      'owner1/twelve-inch/maxi1.webp'
+    );
     expect(profileImageRelativeKey('owner1', 'image/gif')).toBe(
       'owner1/profile.gif'
     );
@@ -30,4 +30,3 @@ describe('artwork-keys', () => {
     expect(() => assertValidArtworkKey('bad key.jpg')).toThrow();
   });
 });
-

@@ -14,13 +14,11 @@ import {
   parseTwelveInchId,
 } from '@/lib/validations/twelve-inch';
 import { requireUser } from '@/server/auth/require-user';
+import { twelveInchArtworkRelativeKey } from '@/server/storage/artwork-keys';
 import {
-  twelveInchArtworkRelativeKey,
-} from '@/server/storage/artwork-keys';
-import {
-  deleteArtworkObject,
-  writeArtworkObject,
-} from '@/server/storage/artwork-store';
+  deleteArtworkBundle,
+  writeArtworkBundle,
+} from '@/server/storage/artwork-bundle';
 import { getSpotifyIntegrationConfig } from '@/server/spotify/config';
 import { fetchSpotifyTrackCoverBuffer } from '@/server/spotify/fetch-album-cover';
 import { revalidatePhysicalSlotPagesFromRow } from '@/server/records/revalidate-physical-slot-pages';
@@ -57,7 +55,7 @@ async function persistArtwork(args: {
     args.pending.mimeType
   );
 
-  await writeArtworkObject(key, args.pending.buffer, args.pending.mimeType);
+  await writeArtworkBundle(key, args.pending.buffer, args.pending.mimeType);
 
   await prisma.collectionTwelveInchSingle.updateMany({
     where: { id: args.twelveInchId, ownerId: args.ownerId },
@@ -69,7 +67,7 @@ async function persistArtwork(args: {
   });
 
   if (args.prevKey && args.prevKey !== key) {
-    await deleteArtworkObject(args.prevKey);
+    await deleteArtworkBundle(args.prevKey);
   }
 
   return { ok: true as const };
@@ -130,7 +128,7 @@ export async function createTwelveInchAction(
           cover.mimeType
         );
         try {
-          await writeArtworkObject(key, cover.buffer, cover.mimeType);
+          await writeArtworkBundle(key, cover.buffer, cover.mimeType);
           await prisma.collectionTwelveInchSingle.update({
             where: { id: row.id },
             data: {
@@ -144,7 +142,7 @@ export async function createTwelveInchAction(
             { err: e, twelveInchId: row.id },
             'createTwelveInch Spotify sleeve art failed — row saved without artwork'
           );
-          await deleteArtworkObject(key).catch(() => {});
+          await deleteArtworkBundle(key).catch(() => {});
         }
       }
     }
@@ -174,8 +172,7 @@ export async function updateTwelveInchAction(
   const existing = await getTwelveInchByIdForOwner(idParsed.id, user.id);
   if (!existing) {
     return {
-      error:
-        'Entry not found or you do not have permission to edit it.',
+      error: 'Entry not found or you do not have permission to edit it.',
     };
   }
 
@@ -190,14 +187,16 @@ export async function updateTwelveInchAction(
   try {
     updated = await updateTwelveInchForOwner(idParsed.id, user.id, parsed.data);
   } catch (e) {
-    logger.error({ err: e, twelveInchId: idParsed.id }, 'updateTwelveInch failed');
+    logger.error(
+      { err: e, twelveInchId: idParsed.id },
+      'updateTwelveInch failed'
+    );
     return { error: 'Could not update entry.' };
   }
 
   if (!updated) {
     return {
-      error:
-        'Entry not found or you do not have permission to update it.',
+      error: 'Entry not found or you do not have permission to update it.',
     };
   }
 
@@ -212,7 +211,7 @@ export async function updateTwelveInchAction(
           artworkUpdatedAt: null,
         },
       });
-      if (prevKey) await deleteArtworkObject(prevKey);
+      if (prevKey) await deleteArtworkBundle(prevKey);
     } else if (artworkParsed.kind === 'present') {
       await persistArtwork({
         pending: artworkParsed,
@@ -252,7 +251,9 @@ export async function updateTwelveInchAction(
   redirect(`/dashboard/twelve-inch/${idParsed.id}`);
 }
 
-export async function deleteTwelveInchAction(formData: FormData): Promise<void> {
+export async function deleteTwelveInchAction(
+  formData: FormData
+): Promise<void> {
   const user = await requireUser();
 
   const idParsed = parseTwelveInchId(formData.get('id'));
@@ -278,7 +279,10 @@ export async function deleteTwelveInchAction(formData: FormData): Promise<void> 
     }
     revalidateTwelveInchPaths(idParsed.id);
   } catch (e) {
-    logger.error({ err: e, twelveInchId: idParsed.id }, 'deleteTwelveInch failed');
+    logger.error(
+      { err: e, twelveInchId: idParsed.id },
+      'deleteTwelveInch failed'
+    );
     redirect('/dashboard/twelve-inch?collectionError=delete-failed');
   }
 

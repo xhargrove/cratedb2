@@ -29,7 +29,8 @@ export default async function RecordDetailPage({ params }: Props) {
   const artworkSrc = recordArtworkUrl(
     record.id,
     Boolean(record.artworkKey),
-    record.artworkUpdatedAt
+    record.artworkUpdatedAt,
+    'medium'
   );
 
   return (

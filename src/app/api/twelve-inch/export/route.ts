@@ -5,7 +5,7 @@ import {
   formatSinglesAsTsv,
 } from '@/lib/export/singles-format';
 import { buildTwelveInchPdf } from '@/lib/export/twelve-inch-pdf';
-import { getCurrentUser } from '@/server/auth/get-current-user';
+import { resolveAuth } from '@/server/auth/get-current-user';
 import { listTwelveInchForExport } from '@/server/twelve-inch-singles/list-for-export';
 
 const ALLOWED = new Set(['csv', 'txt', 'pdf']);
@@ -19,16 +19,24 @@ export async function GET(request: Request) {
     );
   }
 
-  const user = await getCurrentUser();
-  if (!user) {
+  const auth = await resolveAuth();
+  if (auth.status === 'backend_unavailable') {
+    return new NextResponse('Service unavailable', {
+      status: 503,
+      headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+    });
+  }
+  if (auth.status !== 'authenticated') {
     return new NextResponse('Unauthorized', {
       status: 401,
       headers: { 'Content-Type': 'text/plain; charset=utf-8' },
     });
   }
+  const user = auth.user;
 
-  const { rows, totalInDatabase, capped } =
-    await listTwelveInchForExport(user.id);
+  const { rows, totalInDatabase, capped } = await listTwelveInchForExport(
+    user.id
+  );
   const exportedAt = new Date();
   const dateStamp = exportedAt.toISOString().slice(0, 10);
   const suffix = capped ? `-partial` : '';

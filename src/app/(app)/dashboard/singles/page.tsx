@@ -72,7 +72,9 @@ export default async function SinglesPage({
     artworkUpdatedAt: s.artworkUpdatedAt,
   }));
 
-  let subtitle = q ? 'No matches for current search' : 'No 45s or singles logged yet';
+  let subtitle = q
+    ? 'No matches for current search'
+    : 'No 45s or singles logged yet';
   if (total > 0 && !q) {
     subtitle = capped
       ? `Showing first ${displaySingles.length.toLocaleString()} of ${total.toLocaleString()} (max ${COLLECTION_LIST_MAX.toLocaleString()} per page)`
@@ -91,9 +93,9 @@ export default async function SinglesPage({
             Singles (45s)
           </h1>
           <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-            One row per release — set <span className="font-medium">Copies</span>{' '}
-            if you own multiple of the same single. A-side as title; optional
-            B-side.
+            One row per release — set{' '}
+            <span className="font-medium">Copies</span> if you own multiple of
+            the same single. A-side as title; optional B-side.
           </p>
           <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
             {subtitle}
@@ -119,6 +121,7 @@ export default async function SinglesPage({
       </header>
 
       <form
+        key={q || '_empty'}
         method="GET"
         action="/dashboard/singles"
         className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900"

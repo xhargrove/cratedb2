@@ -35,6 +35,10 @@ The app expects the database schema to match the migration history. If migration
 - DB continues storing relative keys (`artworkKey`) and metadata only; artwork bytes stay outside Postgres.
 - Local backend (`ARTWORK_STORAGE_BACKEND=local`) exists for development and migration support.
 
+**Derivatives / storage footprint:** Each collection artwork upload stores the **original** plus two **WebP** objects (thumbnail and medium) at predictable sibling keys. Expect roughly **3× object count** for new uploads versus originals-only legacy data. **Sharp** runs at upload time in the app process (CPU); no separate image worker is required. Missing derivatives fall back to the original at read time until the row is re-saved or a backfill is run.
+
+**HTTP:** `GET /api/records|singles|twelve-inch/[id]/artwork?size=thumb|medium|full` — privacy rules unchanged; **`full`** if `size` is omitted.
+
 See README § “Artwork storage (S3-compatible object storage)” for privacy and key details.
 
 ## Container QR codes (derived physical slots)
@@ -54,6 +58,12 @@ npm run migrate:artwork:to-object
 
 - Script is idempotent by default (skips keys that already exist in object storage).
 - Add `--force` to re-upload existing objects.
+
+## Session reliability (dashboard)
+
+- The dashboard uses an HttpOnly cookie (`cratedb_session`) validated against Postgres each request (`resolveAuth` → `resolveSessionForToken`).
+- **Transient Postgres errors** during session lookup **must not** clear the cookie or send users to `/login`; the UI may show “Could not verify your session” with **Try again** instead.
+- Structured logs use `auth_event` (for example `auth_no_cookie`, `auth_session_not_found`, `auth_session_expired`, `auth_session_lookup_error`, `auth_require_user_redirect`, `auth_require_user_blocked_backend`). Spikes in `auth_session_lookup_error` usually mean DB connectivity stress, not mass logout.
 
 ## Auth abuse protection assumptions
 

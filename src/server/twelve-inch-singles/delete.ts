@@ -1,6 +1,6 @@
 import { prisma } from '@/db/client';
 import { logger } from '@/lib/logger';
-import { deleteArtworkObject } from '@/server/storage/artwork-store';
+import { deleteArtworkBundle } from '@/server/storage/artwork-bundle';
 
 export async function deleteTwelveInchForOwner(id: string, ownerId: string) {
   const row = await prisma.collectionTwelveInchSingle.findFirst({
@@ -14,7 +14,7 @@ export async function deleteTwelveInchForOwner(id: string, ownerId: string) {
 
   if (result.count === 1 && row?.artworkKey) {
     try {
-      await deleteArtworkObject(row.artworkKey);
+      await deleteArtworkBundle(row.artworkKey);
     } catch (e) {
       logger.warn(
         { err: e, twelveInchId: id, artworkKey: row.artworkKey },

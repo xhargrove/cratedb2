@@ -70,7 +70,8 @@ export function EditRecordForm({
   const artworkPreviewUrl = recordArtworkUrl(
     record.id,
     Boolean(record.artworkKey),
-    record.artworkUpdatedAt
+    record.artworkUpdatedAt,
+    'medium'
   );
 
   return (

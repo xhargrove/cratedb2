@@ -1,4 +1,7 @@
-import { extensionForMime, type AllowedArtworkMimeType } from '@/lib/validations/artwork';
+import {
+  extensionForMime,
+  type AllowedArtworkMimeType,
+} from '@/lib/validations/artwork';
 
 const SAFE_KEY_RE = /^[a-zA-Z0-9/_\-.]+$/;
 
@@ -63,4 +66,3 @@ export function twelveInchArtworkRelativeKey(
   const ext = extensionForMime(mimeType);
   return `${ownerId}/twelve-inch/${twelveInchId}.${ext}`;
 }
-

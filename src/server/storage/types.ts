@@ -15,4 +15,3 @@ export interface ArtworkStore {
   deleteObject(key: string): Promise<void>;
   objectExists(key: string): Promise<boolean>;
 }
-
