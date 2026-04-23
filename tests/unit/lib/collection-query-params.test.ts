@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  MAX_GENRE_URL_LENGTH,
+  MAX_SEARCH_Q_LENGTH,
+  MAX_STORAGE_URL_LENGTH,
+} from '@/lib/collection-constants';
+import {
   parseCollectionSearchParams,
   serializeCollectionParams,
   type CollectionUrlState,
@@ -52,6 +57,21 @@ describe('parseCollectionSearchParams', () => {
         sort: ['artist-asc', 'newest'],
       })
     ).toMatchObject({ q: 'a', sort: 'artist-asc' });
+  });
+
+  it('truncates oversized q to max length', () => {
+    const long = 'x'.repeat(MAX_SEARCH_Q_LENGTH + 50);
+    expect(parseCollectionSearchParams({ q: long }).q.length).toBe(
+      MAX_SEARCH_Q_LENGTH
+    );
+  });
+
+  it('truncates genre and location URL params', () => {
+    const g = 'g'.repeat(MAX_GENRE_URL_LENGTH + 10);
+    const loc = 'l'.repeat(MAX_STORAGE_URL_LENGTH + 10);
+    const parsed = parseCollectionSearchParams({ genre: g, location: loc });
+    expect(parsed.genre.length).toBe(MAX_GENRE_URL_LENGTH);
+    expect(parsed.storageLocation.length).toBe(MAX_STORAGE_URL_LENGTH);
   });
 });
 

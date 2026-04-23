@@ -15,6 +15,7 @@ export async function createRecordForOwner(
       genre: data.genre ?? null,
       storageLocation: data.storageLocation ?? null,
       notes: data.notes ?? null,
+      spotifyAlbumId: data.spotifyAlbumId ?? null,
     },
   });
 }

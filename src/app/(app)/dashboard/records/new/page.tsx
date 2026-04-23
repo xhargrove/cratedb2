@@ -2,12 +2,15 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { CreateRecordForm } from '@/components/records/create-record-form';
+import { getSpotifyIntegrationConfig } from '@/server/spotify/config';
 
 export const metadata: Metadata = {
   title: 'New record · Cratedb',
 };
 
 export default function NewRecordPage() {
+  const spotify = getSpotifyIntegrationConfig();
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center gap-4">
@@ -18,7 +21,13 @@ export default function NewRecordPage() {
           ← Records
         </Link>
       </div>
-      <CreateRecordForm />
+      <CreateRecordForm
+        spotifySearch={
+          spotify.enabled
+            ? { enabled: true }
+            : { enabled: false, reason: spotify.reason }
+        }
+      />
     </div>
   );
 }

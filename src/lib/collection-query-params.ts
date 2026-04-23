@@ -1,5 +1,11 @@
 import { z } from 'zod';
 
+import {
+  MAX_GENRE_URL_LENGTH,
+  MAX_SEARCH_Q_LENGTH,
+  MAX_STORAGE_URL_LENGTH,
+} from '@/lib/collection-constants';
+
 export const SORT_KEYS = [
   'newest',
   'oldest',
@@ -31,15 +37,29 @@ function firstString(v: string | string[] | undefined): string | undefined {
   return Array.isArray(v) ? v[0] : v;
 }
 
+function truncate(s: string, max: number): string {
+  if (s.length <= max) return s;
+  return s.slice(0, max);
+}
+
 export function parseCollectionSearchParams(
   raw: Record<string, string | string[] | undefined>
 ): CollectionUrlState {
-  const qRaw = firstString(raw.q)?.trim() ?? '';
-  const genreRaw = firstString(raw.genre)?.trim() ?? '';
-  const locationRaw = firstString(raw.location)?.trim() ?? '';
+  const qTrimmed = (firstString(raw.q)?.trim() ?? '').slice(
+    0,
+    MAX_SEARCH_Q_LENGTH
+  );
+  const genreRaw = truncate(
+    firstString(raw.genre)?.trim() ?? '',
+    MAX_GENRE_URL_LENGTH
+  );
+  const locationRaw = truncate(
+    firstString(raw.location)?.trim() ?? '',
+    MAX_STORAGE_URL_LENGTH
+  );
 
   return {
-    q: qRaw,
+    q: qTrimmed,
     sort: sortSchema.parse(firstString(raw.sort)),
     view: viewSchema.parse(firstString(raw.view)),
     genre: genreRaw,

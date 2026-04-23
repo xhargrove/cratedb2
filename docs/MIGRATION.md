@@ -1,5 +1,15 @@
 # Cratedb — Legacy audit & migration notes
 
+## Rebuild status (this repository)
+
+The **current** app in this repo is a **Next.js + PostgreSQL (Prisma)** implementation. It does **not** use the legacy JSON file layout.
+
+- **Automated JSON → PostgreSQL import:** **not provided** in this codebase. Section 5 below describes a **manual / operator-owned** migration approach for anyone importing historical Streamlit `data/` exports.
+- **Parity targets** in §2 mixed future goals with the rebuild; treat this document as **legacy audit + conceptual mapping**, not a checklist of shipped features here.
+- **Apply schema changes** in deployments with **`npx prisma migrate deploy`** against the migrations in `prisma/migrations/` (see repo `README.md`).
+
+---
+
 **Product:** Cratedb — personal vinyl collection and social discovery (not [CrateDB](https://cratedb.com/) the database).
 
 **Legacy codebase location audited:** `/Users/xavierhargrove/cratedb` (Python / Streamlit).  

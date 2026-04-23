@@ -39,7 +39,7 @@ export function CollectionEmpty(props: Props) {
         href={props.clearHref}
         className="mt-4 inline-block text-sm font-medium text-zinc-900 underline dark:text-zinc-100"
       >
-        Clear filters
+        Reset search & filters
       </Link>
     </div>
   );

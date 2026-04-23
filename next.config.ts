@@ -1,7 +1,12 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  experimental: {
+    serverActions: {
+      /** Cover artwork uploads (validated to 3MB server-side). */
+      bodySizeLimit: '4mb',
+    },
+  },
 };
 
 export default nextConfig;

@@ -29,6 +29,7 @@ export const recordWriteFormSchema = z.object({
   genre: optionalTrimmed(200),
   storageLocation: optionalTrimmed(500),
   notes: optionalTrimmed(5000),
+  spotifyAlbumId: optionalTrimmed(64),
 });
 
 export type RecordWriteFields = z.infer<typeof recordWriteFormSchema>;
@@ -44,6 +45,7 @@ export function parseRecordForm(formData: FormData) {
     genre: formData.get('genre'),
     storageLocation: formData.get('storageLocation'),
     notes: formData.get('notes'),
+    spotifyAlbumId: formData.get('spotifyAlbumId'),
   };
   const parsed = recordWriteFormSchema.safeParse(raw);
   if (!parsed.success) {

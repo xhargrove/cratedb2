@@ -1,18 +1,18 @@
 import Link from 'next/link';
 
+import { MAX_SEARCH_Q_LENGTH } from '@/lib/collection-constants';
 import {
   serializeCollectionParams,
   type CollectionUrlState,
 } from '@/lib/collection-query-params';
-
-type Facets = { genres: string[]; locations: string[] };
+import type { CollectionFacets } from '@/server/records/list-for-owner';
 
 export function CollectionToolbar({
   state,
   facets,
 }: {
   state: CollectionUrlState;
-  facets: Facets;
+  facets: CollectionFacets;
 }) {
   const base = '/dashboard/records';
   const gridHref = `${base}${serializeCollectionParams({ ...state, view: 'grid' })}`;
@@ -44,6 +44,7 @@ export function CollectionToolbar({
               type="search"
               name="q"
               defaultValue={state.q}
+              maxLength={MAX_SEARCH_Q_LENGTH}
               placeholder="Artist, title, genre, storage, notes…"
               className="rounded-md border border-zinc-300 px-3 py-2 text-sm text-zinc-900 dark:border-zinc-600 dark:bg-zinc-950 dark:text-zinc-100"
             />
@@ -137,7 +138,7 @@ export function CollectionToolbar({
             href={clearHref}
             className="text-sm text-zinc-600 underline dark:text-zinc-400"
           >
-            Clear filters
+            Reset search & filters
           </Link>
         ) : null}
       </div>

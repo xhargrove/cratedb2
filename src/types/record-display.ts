@@ -6,4 +6,6 @@ export type RecordDisplayRow = {
   year: number | null;
   genre: string | null;
   storageLocation: string | null;
+  artworkKey: string | null;
+  artworkUpdatedAt: Date | null;
 };

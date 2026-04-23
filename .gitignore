@@ -24,6 +24,9 @@
 .DS_Store
 *.pem
 
+# Local artwork uploads (Phase 5)
+/storage/artwork
+
 # debug
 npm-debug.log*
 yarn-debug.log*

@@ -19,7 +19,10 @@ model User {
 
   profile Profile?
   sessions Session[]
-  records CollectionRecord[]
+  records          CollectionRecord[]
+  wantlistItems WantlistItem[]
+  followsOutgoing UserFollow[] @relation("FollowOutgoing")
+  followsIncoming UserFollow[] @relation("FollowIncoming")
 
   @@index([email])
 }
@@ -30,6 +33,8 @@ model Profile {
   userId      String   @unique
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   displayName String?
+  /// When false, `/u/[id]` hides collection rows (profile header may still show).
+  collectionPublic Boolean @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -57,9 +62,60 @@ model CollectionRecord {
   genre           String?
   storageLocation String?
   notes           String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  /// Relative path under local artwork storage root (`ARTWORK_STORAGE_ROOT`): `{ownerId}/{recordId}.{ext}`
+  artworkKey      String?
+  artworkMimeType String?
+  artworkUpdatedAt DateTime?
+
+  /// Last applied external metadata provider (e.g. `musicbrainz`).
+  metadataSource       String?
+  /// External release identifier (e.g. MusicBrainz release MBID).
+  metadataSourceId     String?
+  /// When enrichment was last applied to this row.
+  metadataAppliedAt    DateTime?
+
+  /// Spotify album id when the row was prefilled from search (optional).
+  spotifyAlbumId       String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([ownerId])
   @@map("records")
+}
+
+/// Desired release the user does not own yet — freeform metadata, separate from `CollectionRecord`.
+model WantlistItem {
+  id        String   @id @default(cuid())
+  ownerId   String
+  owner     User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  artist    String
+  title     String
+  year      Int?
+  genre     String?
+  notes     String?
+  /// Stable normalized key for duplicate prevention (see `buildWantlistDedupeKey`).
+  dedupeKey String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([ownerId, dedupeKey])
+  @@index([ownerId])
+  @@map("wantlist_items")
+}
+
+/// follower → followed (no self-follow; enforced in app + unique pair).
+model UserFollow {
+  id         String   @id @default(cuid())
+  followerId String
+  followedId String
+  follower   User     @relation("FollowOutgoing", fields: [followerId], references: [id], onDelete: Cascade)
+  followed   User     @relation("FollowIncoming", fields: [followedId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([followerId, followedId])
+  @@index([followerId])
+  @@index([followedId])
+  @@map("user_follows")
 }

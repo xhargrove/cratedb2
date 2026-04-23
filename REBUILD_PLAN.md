@@ -1,5 +1,13 @@
 # Cratedb — Rebuild plan (Phase 0 output)
 
+## Final status (hand-off)
+
+The phased rebuild described below was **executed** in this repo through **foundation → enrichment** (credentials auth, collection, artwork, wantlist, follows/public profile, stats, optional MusicBrainz enrichment). **Not implemented** here: marketplace, messaging, activity feed, Spotify-powered add-onboarding as a core path, in-app CSV/JSON export UI, and automated legacy JSON→Postgres tooling.
+
+Authoritative **current** routes, schema, env, migrations, caveats, and production-readiness language: **[REBUILD_READINESS_REPORT.md](REBUILD_READINESS_REPORT.md)** and **[README.md](README.md)**. This file remains as **historical planning context** alongside **[docs/MIGRATION.md](docs/MIGRATION.md)** (legacy audit).
+
+---
+
 This plan defines how to rebuild **Cratedb** (vinyl collection product) as a production-grade **Next.js + TypeScript + PostgreSQL** application, using the legacy Streamlit app only for **feature parity reference**. It is **not** related to the database product CrateDB.
 
 **Audit source:** `/Users/xavierhargrove/cratedb`  
