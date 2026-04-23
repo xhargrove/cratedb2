@@ -69,7 +69,9 @@ export function RecordEnrichmentPanel({
       </h2>
       <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
         Search happens only when you click the button — nothing runs in the
-        background. Results are suggestions; choose how to apply them.
+        background. When you apply a release, we fetch full MusicBrainz details
+        so <strong>genre</strong> (community tags) can be saved even if the
+        search list did not show a tag line.
       </p>
 
       <form

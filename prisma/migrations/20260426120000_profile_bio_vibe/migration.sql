@@ -1,0 +1,6 @@
+-- CreateEnum
+CREATE TYPE "ProfileVibe" AS ENUM ('COLLECTOR', 'DJ', 'PRODUCER', 'CURATOR', 'ARCHIVIST', 'LISTENER');
+
+-- AlterTable
+ALTER TABLE "Profile" ADD COLUMN "bio" TEXT,
+ADD COLUMN "vibe" "ProfileVibe" NOT NULL DEFAULT 'COLLECTOR';

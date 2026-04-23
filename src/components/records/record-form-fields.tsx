@@ -42,8 +42,9 @@ export function RecordFormFields({
                 height={96}
               />
               <p className="text-xs text-zinc-600 dark:text-zinc-400">
-                Cover from Spotify. It will be stored when you save if you
-                don&apos;t upload a different file below.
+                {artworkMode === 'edit' && artworkPreviewUrl
+                  ? 'Spotify cover — saving will replace your current artwork with this image unless you upload a different file below.'
+                  : 'Spotify cover — it will be saved when you submit if you leave the file upload empty.'}
               </p>
             </div>
           ) : null}

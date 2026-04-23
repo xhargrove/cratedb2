@@ -1,3 +1,6 @@
+import Link from 'next/link';
+
+import { DashboardNav } from '@/components/nav/dashboard-nav';
 import { requireUser } from '@/server/auth/require-user';
 import { logoutAction } from '@/server/actions/auth';
 
@@ -9,26 +12,41 @@ export default async function AppGroupLayout({
   const user = await requireUser();
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
-      <header className="flex flex-wrap items-center justify-between gap-4 border-b border-zinc-200 bg-white px-6 py-4 dark:border-zinc-800 dark:bg-zinc-900">
-        <div className="text-sm">
-          <span className="font-medium text-zinc-900 dark:text-zinc-100">
-            {user.profile?.displayName?.trim() || user.email}
+    <div className="relative min-h-screen bg-background">
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-72 bg-gradient-to-b from-amber-500/8 via-transparent to-transparent dark:from-amber-500/5"
+        aria-hidden
+      />
+      <header className="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-4 border-b border-border bg-surface/85 px-4 py-4 shadow-sm backdrop-blur-md dark:bg-surface/90 sm:px-6">
+        <div className="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-3 gap-y-1">
+          <Link
+            href="/dashboard"
+            className="shrink-0 font-semibold tracking-tight text-foreground"
+          >
+            Cratedb
+          </Link>
+          <span className="truncate text-sm font-medium text-foreground">
+            {user.profile?.displayName?.trim() || user.email.split('@')[0]}
           </span>
-          <span className="ml-2 text-zinc-500 dark:text-zinc-400">
-            ({user.email})
+          <span className="hidden truncate text-xs text-muted sm:inline">
+            {user.email}
           </span>
         </div>
         <form action={logoutAction}>
           <button
             type="submit"
-            className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm font-medium text-zinc-800 hover:bg-zinc-100 dark:border-zinc-600 dark:text-zinc-200 dark:hover:bg-zinc-800"
+            className="rounded-full border border-border bg-surface-2 px-4 py-2 text-sm font-medium text-foreground transition hover:bg-border/40 dark:hover:bg-zinc-800"
           >
             Log out
           </button>
         </form>
       </header>
-      <div className="mx-auto max-w-3xl px-4 py-8">{children}</div>
+      <div className="border-b border-border bg-surface/60 backdrop-blur-sm dark:bg-surface/70">
+        <div className="mx-auto max-w-5xl px-3 py-3 sm:px-4">
+          <DashboardNav />
+        </div>
+      </div>
+      <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6">{children}</div>
     </div>
   );
 }

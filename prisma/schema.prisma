@@ -20,6 +20,7 @@ model User {
   profile Profile?
   sessions Session[]
   records          CollectionRecord[]
+  singles          CollectionSingle[]
   wantlistItems WantlistItem[]
   followsOutgoing UserFollow[] @relation("FollowOutgoing")
   followsIncoming UserFollow[] @relation("FollowIncoming")
@@ -33,10 +34,23 @@ model Profile {
   userId      String   @unique
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   displayName String?
+  /// Short public introduction (shown on `/u/[id]`).
+  bio         String?
+  /// How this member describes themselves on the crate scene (collector, DJ, etc.).
+  vibe        ProfileVibe @default(COLLECTOR)
   /// When false, `/u/[id]` hides collection rows (profile header may still show).
   collectionPublic Boolean @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+enum ProfileVibe {
+  COLLECTOR
+  DJ
+  PRODUCER
+  CURATOR
+  ARCHIVIST
+  LISTENER
 }
 
 /// Opaque server-side session (cookie stores Session.id).
@@ -82,6 +96,34 @@ model CollectionRecord {
 
   @@index([ownerId])
   @@map("records")
+}
+
+/// Owned **45 RPM single** — one row per physical single; `title` is the main song (A-side).
+model CollectionSingle {
+  id              String   @id @default(cuid())
+  ownerId         String
+  owner           User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  artist          String
+  title           String
+  /// Optional B-side song title.
+  bSideTitle      String?
+  year            Int?
+  genre           String?
+  storageLocation String?
+  notes           String?
+  /// Relative path: `{ownerId}/singles/{singleId}.{ext}`
+  artworkKey      String?
+  artworkMimeType String?
+  artworkUpdatedAt DateTime?
+
+  /// Spotify track id when prefilled from song search (optional).
+  spotifyTrackId  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([ownerId])
+  @@map("collection_singles")
 }
 
 /// Desired release the user does not own yet — freeform metadata, separate from `CollectionRecord`.

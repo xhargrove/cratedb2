@@ -114,8 +114,9 @@ export async function parseArtworkFileUpload(
     return { ok: false, error: 'Invalid upload payload.' };
   }
 
+  /** Unchosen file inputs often submit a zero-byte `File` — treat as no upload. */
   if (f.size === 0) {
-    return { ok: false, error: 'Image file is empty.' };
+    return { ok: true, kind: 'absent' };
   }
 
   if (f.size > maxBytes) {

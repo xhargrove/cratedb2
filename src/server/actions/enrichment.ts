@@ -11,6 +11,7 @@ import {
   applyMetadataCandidateForRecord,
   type ApplyMode,
 } from '@/server/enrichment/apply-candidate';
+import { enrichCandidateGenreBeforeApply } from '@/server/enrichment/enrich-candidate-genre';
 import { findMetadataCandidatesForRecord } from '@/server/enrichment/find-candidates';
 import type { MetadataCandidate } from '@/server/enrichment/types';
 
@@ -102,10 +103,15 @@ export async function applyMetadataCandidateAction(
   }
 
   try {
+    const candidateWithGenre = await enrichCandidateGenreBeforeApply({
+      candidate: parsed.data,
+      userAgent: enrichmentCfg.musicbrainzUserAgent,
+    });
+
     const applied = await applyMetadataCandidateForRecord({
       recordId: idParsed.id,
       ownerId: user.id,
-      candidate: parsed.data,
+      candidate: candidateWithGenre,
       mode,
     });
 

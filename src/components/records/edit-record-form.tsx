@@ -55,6 +55,8 @@ export function EditRecordForm({
   const [spotifyCoverPreviewUrl, setSpotifyCoverPreviewUrl] = useState<
     string | null
   >(null);
+  /** User picked an album from Spotify search — allow saving its cover (and replacing existing art). */
+  const [applySpotifyArtwork, setApplySpotifyArtwork] = useState(false);
 
   const artworkPreviewUrl = recordArtworkUrl(
     record.id,
@@ -73,6 +75,7 @@ export function EditRecordForm({
         onPickAlbum={(a) => {
           setSpotifyAlbumId(a.id);
           setSpotifyCoverPreviewUrl(a.coverUrl);
+          setApplySpotifyArtwork(true);
           const form = formRef.current;
           if (form) applySpotifyToFormFields(form, a);
         }}
@@ -85,6 +88,9 @@ export function EditRecordForm({
       >
         <input type="hidden" name="recordId" value={record.id} />
         <input type="hidden" name="spotifyAlbumId" value={spotifyAlbumId} />
+        {applySpotifyArtwork ? (
+          <input type="hidden" name="applySpotifyArtwork" value="1" />
+        ) : null}
         {state?.error ? (
           <p
             className="rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-900 dark:bg-red-950 dark:text-red-200"

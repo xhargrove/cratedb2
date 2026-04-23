@@ -213,7 +213,13 @@ export async function updateRecordAction(
       parsed.data.spotifyAlbumId?.trim()
     ) {
       const row = await getRecordByIdForOwner(idParsed.id, user.id);
-      if (row && !row.artworkKey) {
+      const replaceWithSpotify =
+        formData.get('applySpotifyArtwork') === '1';
+      const shouldFetchSpotifyCover =
+        row &&
+        (replaceWithSpotify || !row.artworkKey);
+
+      if (shouldFetchSpotifyCover) {
         const cfg = getSpotifyIntegrationConfig();
         if (cfg.enabled) {
           const cover = await fetchSpotifyAlbumCoverBuffer({
@@ -226,15 +232,24 @@ export async function updateRecordAction(
               idParsed.id,
               cover.mimeType
             );
-            await writeArtworkFile(newKey, cover.buffer);
-            await prisma.collectionRecord.updateMany({
-              where: { id: idParsed.id, ownerId: user.id },
-              data: {
-                artworkKey: newKey,
-                artworkMimeType: cover.mimeType,
-                artworkUpdatedAt: new Date(),
-              },
-            });
+            const prevKey = row.artworkKey;
+            try {
+              await writeArtworkFile(newKey, cover.buffer);
+              await prisma.collectionRecord.updateMany({
+                where: { id: idParsed.id, ownerId: user.id },
+                data: {
+                  artworkKey: newKey,
+                  artworkMimeType: cover.mimeType,
+                  artworkUpdatedAt: new Date(),
+                },
+              });
+              if (prevKey && prevKey !== newKey) {
+                await deleteArtworkFile(prevKey);
+              }
+            } catch (inner) {
+              await deleteArtworkFile(newKey).catch(() => {});
+              throw inner;
+            }
           }
         }
       }

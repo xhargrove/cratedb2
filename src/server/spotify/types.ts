@@ -1,3 +1,16 @@
+/** Track row returned to the UI after normalizing Spotify track search JSON. */
+
+export type SpotifyTrackSummary = {
+  id: string;
+  artist: string;
+  /** Song title — maps to the A-side field for a 45. */
+  title: string;
+  albumName: string | null;
+  year: number | null;
+  coverUrl: string | null;
+  genreHint: string | null;
+};
+
 /** Album row returned to the UI after normalizing Spotify search JSON. */
 
 export type SpotifyAlbumSummary = {

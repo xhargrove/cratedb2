@@ -1,9 +1,15 @@
+import { ProfileVibe } from '@/generated/prisma/client';
+
+import { profileVibeLabel } from '@/lib/profile-vibes';
 import { prisma } from '@/db/client';
 
 export type PublicUserSummary = {
   id: string;
   /** Display label only — never email on public surfaces. */
   displayLabel: string;
+  bio: string | null;
+  vibe: ProfileVibe;
+  vibeLabel: string;
 };
 
 /**
@@ -16,7 +22,9 @@ export async function getPublicUserSummary(
     where: { id: userId },
     select: {
       id: true,
-      profile: { select: { displayName: true } },
+      profile: {
+        select: { displayName: true, bio: true, vibe: true },
+      },
     },
   });
   if (!user) return null;
@@ -25,5 +33,15 @@ export async function getPublicUserSummary(
   const displayLabel =
     name && name.length > 0 ? name : `Collector ${user.id.slice(0, 8)}`;
 
-  return { id: user.id, displayLabel };
+  const vibe = user.profile?.vibe ?? ProfileVibe.COLLECTOR;
+  const rawBio = user.profile?.bio?.trim();
+  const bio = rawBio && rawBio.length > 0 ? rawBio : null;
+
+  return {
+    id: user.id,
+    displayLabel,
+    bio,
+    vibe,
+    vibeLabel: profileVibeLabel(vibe),
+  };
 }

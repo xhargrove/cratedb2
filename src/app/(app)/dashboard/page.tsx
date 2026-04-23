@@ -54,42 +54,97 @@ export default async function DashboardPage({
           </p>
         ) : null}
       </div>
-      <nav className="flex flex-wrap gap-3">
+      <nav
+        className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3"
+        aria-label="Quick actions"
+      >
         <Link
           href="/dashboard/records"
-          className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+          className="group rounded-2xl border border-border bg-surface p-5 shadow-sm ring-1 ring-accent/10 transition hover:border-accent/35 hover:ring-accent/25"
         >
-          View records
+          <span className="block text-base font-semibold text-foreground">
+            Records
+          </span>
+          <span className="mt-1 block text-sm text-muted">
+            Browse and edit your LPs and albums.
+          </span>
+        </Link>
+        <Link
+          href="/dashboard/singles"
+          className="group rounded-2xl border border-border bg-surface p-5 shadow-sm ring-1 ring-accent/10 transition hover:border-accent/35 hover:ring-accent/25"
+        >
+          <span className="block text-base font-semibold text-foreground">
+            Singles (45s)
+          </span>
+          <span className="mt-1 block text-sm text-muted">
+            Track 7-inch singles and B-sides.
+          </span>
         </Link>
         <Link
           href="/dashboard/records/new"
-          className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium hover:bg-zinc-100 dark:border-zinc-600 dark:hover:bg-zinc-800"
+          className="group rounded-2xl border border-border bg-surface p-5 shadow-sm ring-1 ring-accent/10 transition hover:border-accent/35 hover:ring-accent/25"
         >
-          Add record
+          <span className="block text-base font-semibold text-foreground">
+            Add record
+          </span>
+          <span className="mt-1 block text-sm text-muted">
+            Log a new release to your shelf.
+          </span>
         </Link>
         <Link
           href="/dashboard/stats"
-          className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium hover:bg-zinc-100 dark:border-zinc-600 dark:hover:bg-zinc-800"
+          className="group rounded-2xl border border-border bg-surface p-5 shadow-sm ring-1 ring-accent/10 transition hover:border-accent/35 hover:ring-accent/25"
         >
-          Insights
+          <span className="block text-base font-semibold text-foreground">
+            Insights
+          </span>
+          <span className="mt-1 block text-sm text-muted">
+            Stats and breakdowns for your crate.
+          </span>
         </Link>
         <Link
           href="/dashboard/wantlist"
-          className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium hover:bg-zinc-100 dark:border-zinc-600 dark:hover:bg-zinc-800"
+          className="group rounded-2xl border border-border bg-surface p-5 shadow-sm ring-1 ring-accent/10 transition hover:border-accent/35 hover:ring-accent/25"
         >
-          Wantlist
+          <span className="block text-base font-semibold text-foreground">
+            Wantlist
+          </span>
+          <span className="mt-1 block text-sm text-muted">
+            Hunt list for your next digs.
+          </span>
         </Link>
         <Link
           href="/dashboard/wantlist/new"
-          className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium hover:bg-zinc-100 dark:border-zinc-600 dark:hover:bg-zinc-800"
+          className="group rounded-2xl border border-border bg-surface p-5 shadow-sm ring-1 ring-accent/10 transition hover:border-accent/35 hover:ring-accent/25"
         >
-          Add wantlist entry
+          <span className="block text-base font-semibold text-foreground">
+            Add wantlist entry
+          </span>
+          <span className="mt-1 block text-sm text-muted">
+            Note a title you are looking for.
+          </span>
+        </Link>
+        <Link
+          href="/dashboard/profile"
+          className="group rounded-2xl border border-border bg-surface p-5 shadow-sm ring-1 ring-accent/10 transition hover:border-accent/35 hover:ring-accent/25"
+        >
+          <span className="block text-base font-semibold text-foreground">
+            Profile
+          </span>
+          <span className="mt-1 block text-sm text-muted">
+            Display name, vibe, and public shelf.
+          </span>
         </Link>
         <Link
           href={`/u/${user.id}`}
-          className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium hover:bg-zinc-100 dark:border-zinc-600 dark:hover:bg-zinc-800"
+          className="group rounded-2xl border border-dashed border-border bg-surface-2/80 p-5 shadow-sm ring-1 ring-accent/10 transition hover:border-accent/40 sm:col-span-2 lg:col-span-1"
         >
-          Your public profile
+          <span className="block text-base font-semibold text-foreground">
+            Public profile
+          </span>
+          <span className="mt-1 block text-sm text-muted">
+            See what others see at your /u link.
+          </span>
         </Link>
       </nav>
     </div>

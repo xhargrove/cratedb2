@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
   resolveArtworkAbsolutePath,
+  singleArtworkRelativeKey,
   writeArtworkFile,
   readArtworkFile,
   deleteArtworkFile,
@@ -29,6 +30,12 @@ describe('local-artwork-store', () => {
   it('rejects path traversal in relative keys', () => {
     expect(() => resolveArtworkAbsolutePath('../outside/evil.jpg')).toThrow(
       /Invalid artwork path/
+    );
+  });
+
+  it('builds singles keys under singles/ subdirectory', () => {
+    expect(singleArtworkRelativeKey('u1', 's1', 'image/jpeg')).toBe(
+      'u1/singles/s1.jpg'
     );
   });
 

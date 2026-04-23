@@ -30,6 +30,16 @@ export function artworkRelativeKey(
   return `${ownerId}/${recordId}.${ext}`;
 }
 
+/** Key for 45 singles — isolated under `singles/` per owner to avoid clashes with album artwork keys. */
+export function singleArtworkRelativeKey(
+  ownerId: string,
+  singleId: string,
+  mimeType: AllowedArtworkMimeType
+): string {
+  const ext = extensionForMime(mimeType);
+  return `${ownerId}/singles/${singleId}.${ext}`;
+}
+
 export function resolveArtworkAbsolutePath(relativeKey: string): string {
   const root = path.resolve(getArtworkStorageRoot());
   const resolved = path.resolve(root, relativeKey);

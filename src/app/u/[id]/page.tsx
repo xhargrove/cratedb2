@@ -8,6 +8,7 @@ import { getPublicUserSummary } from '@/server/public/get-public-user';
 import { listPublicCollectionForUser } from '@/server/records/list-public-collection';
 
 import { ProfileFollowSection } from '@/components/profile/profile-follow-section';
+import { PublicProfileHeader } from '@/components/profile/public-profile-header';
 import { PublicCollectionGrid } from '@/components/profile/public-collection-grid';
 
 const FOLLOW_ERROR_MESSAGES: Record<string, string> = {
@@ -94,35 +95,39 @@ export default async function PublicProfilePage({
         )}
       </div>
 
-      <header className="border-b border-zinc-200 pb-6 dark:border-zinc-800">
-        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
-          {user.displayLabel}
-        </h1>
-        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-          <span className="font-medium text-zinc-700 dark:text-zinc-300">
-            {counts.followers}
-          </span>{' '}
-          followers ·{' '}
-          <span className="font-medium text-zinc-700 dark:text-zinc-300">
-            {counts.following}
-          </span>{' '}
-          following
-        </p>
-        <div className="mt-4">
-          <ProfileFollowSection
-            targetUserId={id}
-            viewerId={viewer?.id ?? null}
-            isFollowing={following}
-          />
-        </div>
-        {followErrMsg ? (
-          <p
-            className="mt-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-900 dark:border-red-900 dark:bg-red-950/60 dark:text-red-100"
-            role="alert"
-          >
-            {followErrMsg}
+      <header className="space-y-6 border-b border-zinc-200 pb-8 dark:border-zinc-800">
+        <PublicProfileHeader
+          displayLabel={user.displayLabel}
+          vibeLabel={user.vibeLabel}
+          bio={user.bio}
+        />
+        <div>
+          <p className="text-sm text-zinc-600 dark:text-zinc-400">
+            <span className="font-medium text-zinc-700 dark:text-zinc-300">
+              {counts.followers}
+            </span>{' '}
+            followers ·{' '}
+            <span className="font-medium text-zinc-700 dark:text-zinc-300">
+              {counts.following}
+            </span>{' '}
+            following
           </p>
-        ) : null}
+          <div className="mt-4">
+            <ProfileFollowSection
+              targetUserId={id}
+              viewerId={viewer?.id ?? null}
+              isFollowing={following}
+            />
+          </div>
+          {followErrMsg ? (
+            <p
+              className="mt-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-900 dark:border-red-900 dark:bg-red-950/60 dark:text-red-100"
+              role="alert"
+            >
+              {followErrMsg}
+            </p>
+          ) : null}
+        </div>
       </header>
 
       <section className="mt-8">

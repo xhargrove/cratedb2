@@ -1,0 +1,18 @@
+{
+  "codeConnect": {
+    "parser": "react",
+    "label": "Cratedb",
+    "include": ["src/**/*.tsx", "src/**/*.jsx"],
+    "exclude": [
+      "node_modules/**",
+      "tests/**",
+      "src/generated/**",
+      "**/*.test.ts",
+      "**/*.test.tsx",
+      ".next/**"
+    ],
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  }
+}

@@ -1,11 +1,12 @@
-import { ENRICHMENT_MAX_CANDIDATES } from '@/server/enrichment/constants';
+import {
+  ENRICHMENT_MAX_CANDIDATES,
+  MUSICBRAINZ_MBID_RE,
+} from '@/server/enrichment/constants';
+import { extractGenreFromMbReleasePayload } from '@/server/enrichment/musicbrainz-genre';
 import type {
   EnrichmentProviderId,
   MetadataCandidate,
 } from '@/server/enrichment/types';
-
-const MBID_RE =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function safeYearFromDate(date: unknown): number | null {
   if (typeof date !== 'string' || date.length < 4) return null;
@@ -53,27 +54,6 @@ function pickLabel(rel: Record<string, unknown>): string | null {
   return name.trim().slice(0, 500);
 }
 
-function pickGenre(rel: Record<string, unknown>): string | null {
-  const rg = rel['release-group'];
-  if (!rg || typeof rg !== 'object') return null;
-  const tags = (rg as Record<string, unknown>).tags;
-  if (!Array.isArray(tags) || tags.length === 0) return null;
-  const scored = tags
-    .map((t) => {
-      if (!t || typeof t !== 'object') return null;
-      const o = t as Record<string, unknown>;
-      const name = typeof o.name === 'string' ? o.name.trim() : '';
-      const count =
-        typeof o.count === 'number' && Number.isFinite(o.count) ? o.count : 0;
-      return name ? { name, count } : null;
-    })
-    .filter((x): x is { name: string; count: number } => Boolean(x));
-  scored.sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
-  const top = scored[0];
-  if (!top) return null;
-  return top.name.slice(0, 200);
-}
-
 /**
  * Maps MusicBrainz `/ws/2/release` search JSON to normalized candidates (bounded).
  */
@@ -95,7 +75,7 @@ export function normalizeMusicBrainzReleaseSearch(
     if (!rel || typeof rel !== 'object') continue;
     const r = rel as Record<string, unknown>;
     const id = typeof r.id === 'string' ? r.id : '';
-    if (!MBID_RE.test(id) || seen.has(id)) continue;
+    if (!MUSICBRAINZ_MBID_RE.test(id) || seen.has(id)) continue;
 
     const title =
       typeof r.title === 'string' ? r.title.trim().slice(0, 500) : '';
@@ -117,7 +97,7 @@ export function normalizeMusicBrainzReleaseSearch(
       artist,
       title,
       year,
-      genre: pickGenre(r),
+      genre: extractGenreFromMbReleasePayload(r),
       label: pickLabel(r),
     });
   }

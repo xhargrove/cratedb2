@@ -42,11 +42,10 @@ describe('parseArtworkFileUpload', () => {
     expect(out).toEqual({ ok: true, kind: 'absent' });
   });
 
-  it('rejects empty file size', async () => {
+  it('treats zero-byte file as absent (unchosen file input)', async () => {
     const file = new File([], 'x.jpg', { type: 'image/jpeg' });
     const out = await parseArtworkFileUpload(file);
-    expect(out.ok).toBe(false);
-    if (!out.ok) expect(out.error).toMatch(/empty/i);
+    expect(out).toEqual({ ok: true, kind: 'absent' });
   });
 
   it('rejects oversized payload', async () => {

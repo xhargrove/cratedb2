@@ -17,7 +17,11 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:push": "prisma db push",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "figma:connect:create": "figma connect create",
+    "figma:connect:parse": "figma connect parse",
+    "figma:connect:publish": "figma connect publish",
+    "figma:connect:unpublish": "figma connect unpublish"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.8.0",
@@ -33,6 +37,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@figma/code-connect": "^1.4.3",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/pg": "^8.20.0",

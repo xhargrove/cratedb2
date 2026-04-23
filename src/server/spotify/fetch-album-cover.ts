@@ -115,3 +115,61 @@ export async function fetchSpotifyAlbumCoverBuffer(args: {
 
   return { buffer: buf, mimeType };
 }
+
+/**
+ * Sleeve art from a Spotify **track** — uses that track's release `album.images`.
+ */
+export async function fetchSpotifyTrackCoverBuffer(args: {
+  cfg: Extract<SpotifyIntegrationConfig, { enabled: true }>;
+  trackId: string;
+}): Promise<{
+  buffer: Buffer;
+  mimeType: AllowedArtworkMimeType;
+} | null> {
+  const id = args.trackId.trim();
+  if (!id || id.length > 64) return null;
+
+  const tokenRes = await getClientCredentialsToken(args.cfg);
+  if (!tokenRes.ok) return null;
+
+  const url = `https://api.spotify.com/v1/tracks/${encodeURIComponent(id)}`;
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), 12_000);
+
+  let json: unknown;
+  try {
+    const res = await fetch(url, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${tokenRes.token}`,
+        Accept: 'application/json',
+      },
+      signal: ctrl.signal,
+      cache: 'no-store',
+    });
+
+    if (!res.ok) return null;
+
+    json = await res.json();
+  } catch (e) {
+    logger.warn({ err: e }, 'fetchSpotifyTrackCoverBuffer track HTTP');
+    return null;
+  } finally {
+    clearTimeout(t);
+  }
+
+  if (!json || typeof json !== 'object') return null;
+  const album = (json as Record<string, unknown>).album;
+  if (!album || typeof album !== 'object') return null;
+  const images = (album as Record<string, unknown>).images;
+  const imageUrl = pickBestSpotifyImageUrl(images);
+  if (!imageUrl) return null;
+
+  const buf = await fetchImageBytesFromSpotifyCdn(imageUrl);
+  if (!buf) return null;
+
+  const mimeType = detectArtworkMimeFromBytes(buf);
+  if (!mimeType) return null;
+
+  return { buffer: buf, mimeType };
+}
