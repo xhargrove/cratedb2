@@ -1,6 +1,7 @@
 import { cache } from 'react';
 
 import { logger } from '@/lib/logger';
+import { serializeUnknownError } from '@/lib/server-error-serialize';
 import {
   clearSessionCookie,
   getSessionCookieValue,
@@ -30,7 +31,19 @@ export const resolveAuth = cache(async (): Promise<AuthResolution> => {
     return { status: 'unauthenticated', reason: 'no_cookie' };
   }
 
-  const res = await resolveSessionForToken(token);
+  let res: Awaited<ReturnType<typeof resolveSessionForToken>>;
+  try {
+    res = await resolveSessionForToken(token);
+  } catch (err) {
+    logger.error(
+      {
+        auth_event: 'auth_session_lookup_uncaught',
+        ...serializeUnknownError(err),
+      },
+      'session lookup threw; treating as backend unavailable'
+    );
+    return { status: 'backend_unavailable' };
+  }
 
   switch (res.outcome) {
     case 'session':

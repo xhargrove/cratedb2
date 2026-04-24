@@ -1,6 +1,8 @@
 /**
  * Thrown when session validation cannot reach the database after retries.
- * Must not be treated as “logged out”; cookie stays intact. Caught by `(app)/error.tsx`.
+ * Must not be treated as “logged out”; cookie stays intact.
+ * Handled by `(app)/error.tsx` — session work must run under that segment’s tree
+ * (e.g. `AppDashboardShell`), not in `(app)/layout.tsx`, or Next falls back to root `error.tsx`.
  */
 export class SessionBackendUnavailableError extends Error {
   readonly code = 'SESSION_BACKEND_UNAVAILABLE' as const;
